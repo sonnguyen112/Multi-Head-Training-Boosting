@@ -1,0 +1,22 @@
+# TODO: Update with exact module version
+numpy
+torch
+opencv_python
+loguru
+scikit-image
+tqdm
+torchvision
+Pillow
+thop
+ninja
+tabulate
+tensorboard
+lap
+motmetrics
+filterpy
+h5py
+
+# verified versions
+onnx
+onnxruntime
+onnx-simplifier
