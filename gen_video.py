@@ -1,5 +1,6 @@
 import cv2
 import os
+import re
 
 def images_to_video(image_folder, video_name, fps):
     images = [img for img in os.listdir(image_folder) if img.endswith(".jpg")]
@@ -16,5 +17,13 @@ def images_to_video(image_folder, video_name, fps):
     cv2.destroyAllWindows()
     video.release()
 
-# Usage
-images_to_video('datasets/mot/train/MOT17-13-FRCNN/img1', 'videos/MOT17-13-FRCNN.avi', 30)
+# # Usage
+# images_to_video('datasets/mot/train/MOT17-13-FRCNN/img1', 'videos/MOT17-13-FRCNN.avi', 30)
+
+for e in os.listdir("datasets/mot/train"):
+    info = open(f'datasets/mot/train/{e}/seqinfo.ini', 'r').read()
+    # Get the frame rate
+    fps = int(re.findall(r'frameRate=(\d+)', info)[0])
+    images_to_video(f'datasets/mot/train/{e}/img1', f'videos/{e}.avi', fps)
+    print(f'{e} done')
+

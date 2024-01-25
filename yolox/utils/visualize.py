@@ -49,7 +49,10 @@ def get_color(idx):
     return color
 
 
-def plot_tracking(online_targets, outputs,image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=None, iou_matrix=None):
+def plot_tracking(outputs,image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=None, iou_matrix=None, online_targets=None, sim_list=None,
+                  prev_online_targets=[],
+                  is_use_yolo = None,
+                  kalman_output=None,):
     im = np.ascontiguousarray(np.copy(image))
     im_h, im_w = im.shape[:2]
 
@@ -63,19 +66,22 @@ def plot_tracking(online_targets, outputs,image, tlwhs, obj_ids, scores=None, fr
     line_thickness = 3
 
     radius = max(5, int(im_w/140.))
-    cv2.putText(im, 'frame: %d fps: %.2f num: %d' % (frame_id, fps, len(tlwhs)),
+    cv2.putText(im, 'frame: %d fps: %.2f num: %d is_use_yolo: %s' % (frame_id, fps, len(tlwhs), is_use_yolo),
                 (0, int(15 * text_scale)), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), thickness=2)
-    if frame_id % 3 == 0:
-        for i in range(len(outputs)):
-            # print(type(tuple(outputs[i][0:2].tolist())),type(tuple(outputs[i][2:4].tolist())))
-            intbox = tuple(map(int, outputs[i].tolist()))
-            cv2.rectangle(im, intbox[0:2], intbox[2:4], (255,0,0), thickness=line_thickness)
-            # Add iou text
-            # if iou_matrix is not None:
-            #     cv2.putText(im, '{:.2f}'.format(iou_matrix[i][i]), (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
-        # print(type(intbox[0:2]), intbox[0:2])
-        # cv2.rectangle(im, tuple(outputs[i][0:2].tolist()),tuple(outputs[i][2:4].tolist()), (0, 0, 255), thickness=line_thickness)
-        # cv2.rectangle(im,tuple(outputs[i][0:2].tolist()),tuple(outputs[i][2:4].tolist()),(255,0,0),thickness=line_thickness)
+    # for i in range(len(kalman_output)):
+    #     # print(type(tuple(outputs[i][0:2].tolist())),type(tuple(outputs[i][2:4].tolist())))
+    #     intbox = tuple(map(int, kalman_output[i].tolist()))
+    #     cv2.rectangle(im, intbox[0:2], intbox[2:4], (13,13,250), thickness=line_thickness + 5)
+    #     try:
+    #         cv2.putText(im, str(round(sim_list[i], 2)), (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
+    #     except:
+    #         pass
+        # Add iou text
+        # if iou_matrix is not None:
+        #     cv2.putText(im, '{:.2f}'.format(iou_matrix[i][i]), (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
+    # print(type(intbox[0:2]), intbox[0:2])
+    # cv2.rectangle(im, tuple(outputs[i][0:2].tolist()),tuple(outputs[i][2:4].tolist()), (0, 0, 255), thickness=line_thickness)
+    # cv2.rectangle(im,tuple(outputs[i][0:2].tolist()),tuple(outputs[i][2:4].tolist()),(255,0,0),thickness=line_thickness)
     for i, tlwh in enumerate(tlwhs):
         x1, y1, w, h = tlwh
         intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
@@ -87,7 +93,11 @@ def plot_tracking(online_targets, outputs,image, tlwhs, obj_ids, scores=None, fr
         cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=line_thickness)
         # cv2.putText(im, id_text, (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
         # Add direction text
-        cv2.putText(im, str(online_targets[i].direction), (intbox[0] + int(w), intbox[1] + int(h)), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
+        # cv2.putText(im, str(online_targets[i].direction), (intbox[0] + int(w), intbox[1] + int(h)), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
+    for i in prev_online_targets:
+        x1, y1, w, h = i.tlwh
+        intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
+        cv2.rectangle(im, intbox[0:2], intbox[2:4], (1, 1, 17), thickness=line_thickness)
     return im
 
 
