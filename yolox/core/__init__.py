@@ -4,3 +4,4 @@
 
 from .launch import launch
 from .trainer import Trainer
+from .teacher_student_trainer import TeacherStudentTrainer

@@ -13,6 +13,8 @@ from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 import glob
 import os
+import torch.multiprocessing as mp
+from multiprocessing import Pool
 def make_parser_2():
     parser = argparse.ArgumentParser("ByteTrack Demo!")
     parser.add_argument("-expn", "--experiment-name", type=str, default=None)
@@ -83,15 +85,17 @@ def make_parser_2():
     parser.add_argument('--min_box_area', type=float, default=10, help='filter out tiny boxes')
     parser.add_argument("--mot20", dest="mot20", default=False,
                         action="store_true", help="test mot20.")
+                        
     return parser
-def image_yolox_s(img_path):
+
+def image_yolox_s(img_path1, img_path2):
     args = make_parser_2().parse_args()
-    args.path = img_path
-    args.exp_file = 'exps/example/mot/yolox_s_mix_det.py'
-    args.ckpt = 'pretrained/bytetrack_s_mot17.pth.tar'
+    args.path = img_path1
+    args.exp_file = 'exps/example/mot/yolox_nano_mix_det.py'
+    args.ckpt = 'pretrained/bytetrack_nano_mot17.pth.tar'
     args.fuse = True
     exp = get_exp(args.exp_file, args.name)
-    args.device = torch.device("cuda" if args.device == "gpu" else "cpu")
+    args.device = "cuda"
     model = exp.get_model().to(args.device)
     model.eval()
     ckpt_file = args.ckpt
@@ -104,22 +108,33 @@ def image_yolox_s(img_path):
     tracker = BYTETracker(args, frame_rate=args.fps)
     timer = Timer()
     start = time.time()
-    outputs, img_info = predictor.inference(img_path, timer)
+    outputs, r1, r2 = predictor.batching_inference(img_path1, img_path2)
     end = time.time()
     print(f"Total Inference Time: {end - start}")
     results = []
-    if outputs[0] is not None:
-        online_targets = tracker.update(
-                outputs[0], [img_info['height'], img_info['width']], exp.test_size)
-    for t in online_targets:
-        tlwh = t.tlwh
-        tid = t.track_id
-        vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
-        if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
-            results.append(
-                [tlwh[0], tlwh[1], tlwh[2], tlwh[3]]
-            )
-    return results
+    
+    if outputs[1] is not None:
+        output_results = outputs[1]
+        if output_results.shape[1] == 5:
+            scores = output_results[:, 4]
+            bboxes = output_results[:, :4]
+        else:
+            output_results = output_results.cpu().numpy()
+            scores = output_results[:, 4] * output_results[:, 5]
+            bboxes = output_results[:, :4]  # x1y1x2y2
+        remain_inds = scores > args.track_thresh
+        dets = bboxes[remain_inds] / r2
+        print("DET",dets.shape)
+    return dets
+    # for t in online_targets:
+    #     tlwh = t.tlwh
+    #     tid = t.track_id
+    #     vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
+    #     if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
+    #         results.append(
+    #             [tlwh[0], tlwh[1], tlwh[2], tlwh[3]]
+    #         )
+    # return results
 # print(len(image_yolox_s('/home/khoi/Downloads/420055418_7376426735747116_2750210599166939850_n.jpg')))
 
 def SSIM_algo(image1_path, image2_path):
@@ -169,11 +184,14 @@ def get_similarity_errors(image1_path,image2_path):
     image1_norm = image1_gray / np.sqrt(np.sum(image1_gray**2))
     image2_norm = image2_gray / np.sqrt(np.sum(image2_gray**2))
     return np.sum(image1_norm*image2_norm)
-bbox = image_yolox_s('1.png')[0]
+start = time.time()
+bbox = image_yolox_s('c.png', "d.png")[0]
+end = time.time()
 print("bbox",bbox)
-img = cv2.imread('1.png')
+print("Time",end - start)
+img = cv2.imread('d.png')
 #Draw bbox tlwh
-intbox = tuple(map(int, (bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3])))
+intbox = tuple(map(int, (bbox[0], bbox[1], bbox[2], bbox[3])))
 cv2.rectangle(img, intbox[0:2], intbox[2:4], (255,0,0), 3)
 cv2.imshow('image',img)
 cv2.waitKey(0)

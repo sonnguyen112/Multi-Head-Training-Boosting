@@ -18,6 +18,7 @@ from yolox.utils import xyxy2cxcywh
 
 import math
 import random
+import time
 
 
 def augment_hsv(img, hgain=0.015, sgain=0.7, vgain=0.4):
@@ -198,8 +199,8 @@ def preproc(image, input_size, mean, std, swap=(2, 0, 1)):
         (int(img.shape[1] * r), int(img.shape[0] * r)),
         interpolation=cv2.INTER_LINEAR,
     ).astype(np.float32)
+    cv2.imwrite("resized_img.jpg", resized_img)
     padded_img[: int(img.shape[0] * r), : int(img.shape[1] * r)] = resized_img
-
     padded_img = padded_img[:, :, ::-1]
     padded_img /= 255.0
     if mean is not None:

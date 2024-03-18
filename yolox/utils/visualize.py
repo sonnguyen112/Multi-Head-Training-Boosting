@@ -94,10 +94,13 @@ def plot_tracking(outputs,image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0.
         # cv2.putText(im, id_text, (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
         # Add direction text
         # cv2.putText(im, str(online_targets[i].direction), (intbox[0] + int(w), intbox[1] + int(h)), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),thickness=text_thickness)
-    for i in prev_online_targets:
-        x1, y1, w, h = i.tlwh
-        intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
-        cv2.rectangle(im, intbox[0:2], intbox[2:4], (1, 1, 17), thickness=line_thickness)
+    # for i in prev_online_targets:
+    #     x1, y1, w, h = i.tlwh
+    #     intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
+    #     cv2.rectangle(im, intbox[0:2], intbox[2:4], (1, 1, 17), thickness=line_thickness)
+    # if is_use_yolo == False:
+    #     for i in outputs:
+    #         cv2.rectangle(im, tuple(map(int,i[0:2])), tuple(map(int,i[2:4])), (31,223, 191), thickness=line_thickness+3)
     return im
 
 
