@@ -127,6 +127,7 @@ def launch_by_subprocess(
             port = _find_free_port()
 
     # set PyTorch distributed related environmental variables
+    os.environ["OMP_NUM_THREADS"] = "28"
     current_env = os.environ.copy()
     current_env["MASTER_ADDR"] = dist_url
     current_env["MASTER_PORT"] = str(port)
