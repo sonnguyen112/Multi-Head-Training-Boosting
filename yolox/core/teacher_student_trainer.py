@@ -56,7 +56,6 @@ class TeacherStudentTrainer:
         # metric record
         self.meter = MeterBuffer(window_size=exp.print_interval)
         self.file_name = os.path.join(exp.output_dir, args.experiment_name)
-        self.teacher_checkpoint = "pretrained/bytetrack_x_mot17.pth.tar"
 
         if self.rank == 0:
             os.makedirs(self.file_name, exist_ok=True)
@@ -277,7 +276,7 @@ class TeacherStudentTrainer:
 
     def init_teacher_model(self,t_model):
         logger.info("Init teacher model")
-        ckpt_file = self.teacher_checkpoint
+        ckpt_file = self.args.teacher_ckpt
         ckpt = torch.load(ckpt_file, map_location="cpu")
         t_model.load_state_dict(ckpt["model"])
         logger.info("Create Teacher done")

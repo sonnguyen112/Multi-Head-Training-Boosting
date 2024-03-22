@@ -51,6 +51,7 @@ def make_parser():
         "--resume", default=False, action="store_true", help="resume training"
     )
     parser.add_argument("-c", "--ckpt", default=None, type=str, help="checkpoint file")
+    parser.add_argument("-tc", "--teacher_ckpt", default=None, type=str, help="teacher checkpoint file")
     parser.add_argument(
         "-e",
         "--start_epoch",
