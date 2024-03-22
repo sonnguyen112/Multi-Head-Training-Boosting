@@ -69,6 +69,7 @@ class YOLOXStudent(nn.Module):
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_model.backbone(x)[i]
+                print(teacher_feature[0].shape, teacher_feature[1].shape, teacher_feature[2].shape)
                 s_relation = self.student_non_local[i](student_feature)
                 t_relation = self.teacher_non_local[i](teacher_feature)
                 # print(s_relation.shape, t_relation.shape)
