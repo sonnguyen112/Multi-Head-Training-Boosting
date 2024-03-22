@@ -36,20 +36,20 @@ class YOLOXStudent(nn.Module):
         )
         self.teacher_non_local = nn.ModuleList(
             [
-                GloRe_Unit_2D(128,256),
-                GloRe_Unit_2D(256,256),
-                GloRe_Unit_2D(512,256),
+                GloRe_Unit_2D(320,256),
+                GloRe_Unit_2D(640,256),
+                GloRe_Unit_2D(1280,256),
             ]
         )
         self.non_local_adaptation = nn.ModuleList([
-            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(512, 512, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
         ])
         self.for_adaptation = nn.ModuleList([
-            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(512, 512, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(256, 610, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
         ])
 
     def forward(self, x, targets=None, t_model = None):
