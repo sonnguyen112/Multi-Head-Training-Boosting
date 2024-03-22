@@ -57,6 +57,7 @@ class YOLOXStudent(nn.Module):
         # print(t_model)
         fpn_outs = self.backbone(x)
         print(fpn_outs[0].shape, fpn_outs[1].shape, fpn_outs[2].shape)
+        print(t_model.backbone(x)[0].shape, t_model.backbone(x)[1].shape, t_model.backbone(x)[2].shape)
         if self.training:
             assert targets is not None
             loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg = self.head(
@@ -69,7 +70,6 @@ class YOLOXStudent(nn.Module):
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_model.backbone(x)[i]
-                print(teacher_feature[0].shape, teacher_feature[1].shape, teacher_feature[2].shape)
                 s_relation = self.student_non_local[i](student_feature)
                 t_relation = self.teacher_non_local[i](teacher_feature)
                 # print(s_relation.shape, t_relation.shape)
