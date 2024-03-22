@@ -109,7 +109,7 @@ def launch_by_subprocess(
             master_ip = subprocess.check_output(["hostname", "--fqdn"]).decode("utf-8")
             master_ip = str(master_ip).strip()
             dist_url = "tcp://{}".format(master_ip)
-            ip_add_file = "./" + args[1].experiment_name + "_ip_add.txt"
+            ip_add_file = "./" + args[1].exp_name + "_ip_add.txt"
             if machine_rank == 0:
                 port = _find_free_port()
                 with open(ip_add_file, "w") as ip_add:
@@ -197,9 +197,9 @@ def _distributed_worker(
     comm.synchronize()
 
     if global_rank == 0 and os.path.exists(
-        "./" + args[1].experiment_name + "_ip_add.txt"
+        "./" + args[1].exp_name + "_ip_add.txt"
     ):
-        os.remove("./" + args[1].experiment_name + "_ip_add.txt")
+        os.remove("./" + args[1].exp_name + "_ip_add.txt")
 
     assert num_gpus_per_machine <= torch.cuda.device_count()
     torch.cuda.set_device(local_rank)
