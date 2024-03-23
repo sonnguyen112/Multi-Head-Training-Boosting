@@ -29,16 +29,16 @@ class YOLOXStudent(nn.Module):
 
         self.student_non_local = nn.ModuleList(
             [   
-                GloRe_Unit_2D(128,256),
+                GloRe_Unit_2D(128,128),
                 GloRe_Unit_2D(256,256),
-                GloRe_Unit_2D(512,256),
+                GloRe_Unit_2D(512,512),
             ]
         )
         self.teacher_non_local = nn.ModuleList(
             [
-                GloRe_Unit_2D(320,256),
-                GloRe_Unit_2D(640,256),
-                GloRe_Unit_2D(1280,256),
+                GloRe_Unit_2D(320,320),
+                GloRe_Unit_2D(640,640),
+                GloRe_Unit_2D(1280,1280),
             ]
         )
         self.non_local_adaptation = nn.ModuleList([
@@ -76,8 +76,10 @@ class YOLOXStudent(nn.Module):
                 kd_nonlocal_loss += torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
                 # kd_foreground_loss += torch.dist(student_feature, teacher_feature, p=2)
                 kd_foreground_loss += torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
-                if torch.isnan(kd_nonlocal_loss).any() or torch.isnan(kd_foreground_loss).any():
-                    continue
+                if torch.isnan(kd_nonlocal_loss).any():
+                    kd_nonlocal_loss = 100
+                if torch.isnan(kd_foreground_loss).any():
+                    kd_foreground_loss = 100
             kd_nonlocal_loss *= 0.004
             kd_foreground_loss *= 0.006
                 
