@@ -66,26 +66,21 @@ class YOLOXStudent(nn.Module):
             kd_nonlocal_loss = 0
             kd_foreground_loss=0
 
-            t_feature = t_model.backbone(x)
-            for i in range(len(x)):
-                key = x[i].to("cpu").numpy().tolist().__str__()
-                t_feature_map[key] = (t_feature[0][i], t_feature[1][i], t_feature[2][i])
-                print(t_feature_map[key][0].shape, t_feature_map[key][1].shape, t_feature_map[key][2].shape)
-            # for i in range(3):
-            #     student_feature = fpn_outs[i]
-            #     teacher_feature = t_model.backbone(x)[i]
-            #     s_relation = self.student_non_local[i](student_feature)
-            #     t_relation = self.teacher_non_local[i](teacher_feature)
-            #     # print(s_relation.shape, t_relation.shape)
-            #     # print(student_feature.shape, teacher_feature.shape)
-            #     nonlocal_val = torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
-            #     foreground_val = torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
-            #     if not torch.isnan(nonlocal_val).any():
-            #         kd_nonlocal_loss += nonlocal_val
-            #     if not torch.isnan(foreground_val).any():
-            #         kd_foreground_loss += foreground_val
-            # kd_nonlocal_loss *= 0.004
-            # kd_foreground_loss *= 0.006
+            for i in range(3):
+                student_feature = fpn_outs[i]
+                teacher_feature = t_model.backbone(x)[i]
+                s_relation = self.student_non_local[i](student_feature)
+                t_relation = self.teacher_non_local[i](teacher_feature)
+                # print(s_relation.shape, t_relation.shape)
+                # print(student_feature.shape, teacher_feature.shape)
+                nonlocal_val = torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
+                foreground_val = torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
+                if not torch.isnan(nonlocal_val).any():
+                    kd_nonlocal_loss += nonlocal_val
+                if not torch.isnan(foreground_val).any():
+                    kd_foreground_loss += foreground_val
+            kd_nonlocal_loss *= 0.004
+            kd_foreground_loss *= 0.006
                 
             outputs = {
                 "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss,
