@@ -60,11 +60,11 @@ class GloRe_Unit(nn.Module):
         # (n, num_in, h, w) --> (n, num_state, h, w)
         #                   --> (n, num_state, h*w)
         x_state_reshaped = self.conv_state(x).view(n, self.num_s, -1)
-        print(x_state_reshaped)
 
         # (n, num_in, h, w) --> (n, num_node, h, w)
         #                   --> (n, num_node, h*w)
         x_proj_reshaped = self.conv_proj(x).view(n, self.num_n, -1)
+        print(x_proj_reshaped)
 
         # (n, num_in, h, w) --> (n, num_node, h, w)
         #                   --> (n, num_node, h*w)
