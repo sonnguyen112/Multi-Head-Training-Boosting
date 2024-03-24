@@ -71,8 +71,8 @@ class YOLOXStudent(nn.Module):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
                 # Normalize the feature by z-score
-                mean = student_feature.mean(dim=(2, 3), keepdim=True)
-                std = student_feature.std(dim=(2, 3), keepdim=True)
+                mean = student_feature.mean(keepdim=True)
+                std = student_feature.std(keepdim=True)
                 student_feature = (student_feature - mean) / std
                 print(student_feature.max(), teacher_feature.max())
                 exit()
