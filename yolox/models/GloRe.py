@@ -113,7 +113,7 @@ class GloRe_Unit_1D(GloRe_Unit):
                                             normalize=normalize)
 
 class GloRe_Unit_2D(GloRe_Unit):
-    def __init__(self, num_in, num_mid, normalize=False):
+    def __init__(self, num_in, num_mid, normalize=True):
         """
         Set 'normalize = True' if the input size is not fixed
         """
