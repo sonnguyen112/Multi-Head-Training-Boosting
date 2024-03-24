@@ -90,7 +90,10 @@ class GloRe_Unit(nn.Module):
         x_state = x_state_reshaped.view(n, self.num_s, *x.size()[2:])
         # -----------------
         # (n, num_state, h, w) -> (n, num_in, h, w)
-        x_state = self.reduce_value(x_state)
+        # x_state = self.reduce_value(x_state)
+        if torch.isnan(x_state).any():
+            print(x_state)
+            exit()
         print(self.conv_extend(x_state))
         out = x + self.blocker(self.conv_extend(x_state))
         # print(out)
