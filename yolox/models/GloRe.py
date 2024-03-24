@@ -79,10 +79,10 @@ class GloRe_Unit(nn.Module):
 
         # reasoning: (n, num_state, num_node) -> (n, num_state, num_node)
         x_n_rel = self.gcn(x_n_state)
-        print(x_n_rel)
         # reverse projection: interaction space -> coordinate space
         # (n, num_state, num_node) x (n, num_node, h*w) --> (n, num_state, h*w)
         x_state_reshaped = torch.matmul(x_n_rel, x_rproj_reshaped)
+        print(x_state_reshaped)
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
