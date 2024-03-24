@@ -67,6 +67,8 @@ class TeacherStudentTrainer:
             mode="a",
         )
 
+        self.t_feature_map = {}
+
     def train(self):
         self.before_train()
         try:
@@ -100,7 +102,7 @@ class TeacherStudentTrainer:
         data_end_time = time.time()
 
         with torch.cuda.amp.autocast(enabled=self.amp_training):
-            outputs = self.model(inps, targets, self.t_model)
+            outputs = self.model(inps, targets, self.t_model, self.t_feature_map)
             
         loss = outputs["total_loss"]
 
@@ -222,6 +224,11 @@ class TeacherStudentTrainer:
         if (self.epoch + 1) % self.exp.eval_interval == 0:
             all_reduce_norm(self.model)
             self.evaluate_and_save_model()
+        
+        import pickle
+        with open('t_feature_map.pkl', 'wb') as f:
+            pickle.dump(self.t_feature_map, f)
+        exit()
 
     def before_iter(self):
         pass

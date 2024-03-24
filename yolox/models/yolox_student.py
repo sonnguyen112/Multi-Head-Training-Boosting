@@ -52,7 +52,7 @@ class YOLOXStudent(nn.Module):
             nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
         ])
 
-    def forward(self, x, targets=None, t_model = None):
+    def forward(self, x, targets=None, t_model = None, t_feature_map = None):
         # fpn output content features of [dark3, dark4, dark5]
         # print(t_model)
         fpn_outs = self.backbone(x)
@@ -66,22 +66,24 @@ class YOLOXStudent(nn.Module):
             kd_nonlocal_loss = 0
             kd_foreground_loss=0
 
-            for i in range(3):
-                student_feature = fpn_outs[i]
-                teacher_feature = t_model.backbone(x)[i]
-                s_relation = self.student_non_local[i](student_feature)
-                t_relation = self.teacher_non_local[i](teacher_feature)
-                # print(s_relation.shape, t_relation.shape)
-                # print(student_feature.shape, teacher_feature.shape)
-                kd_nonlocal_loss += torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
-                # kd_foreground_loss += torch.dist(student_feature, teacher_feature, p=2)
-                kd_foreground_loss += torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
-                if torch.isnan(kd_nonlocal_loss).any():
-                    kd_nonlocal_loss = 100
-                if torch.isnan(kd_foreground_loss).any():
-                    kd_foreground_loss = 100
-            kd_nonlocal_loss *= 0.004
-            kd_foreground_loss *= 0.006
+            t_feature = t_model.backbone(x)
+            for i in range(len(t_feature)):
+                t_feature_map[x[i]] = t_feature[i]
+            # for i in range(3):
+            #     student_feature = fpn_outs[i]
+            #     teacher_feature = t_model.backbone(x)[i]
+            #     s_relation = self.student_non_local[i](student_feature)
+            #     t_relation = self.teacher_non_local[i](teacher_feature)
+            #     # print(s_relation.shape, t_relation.shape)
+            #     # print(student_feature.shape, teacher_feature.shape)
+            #     nonlocal_val = torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
+            #     foreground_val = torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
+            #     if not torch.isnan(nonlocal_val).any():
+            #         kd_nonlocal_loss += nonlocal_val
+            #     if not torch.isnan(foreground_val).any():
+            #         kd_foreground_loss += foreground_val
+            # kd_nonlocal_loss *= 0.004
+            # kd_foreground_loss *= 0.006
                 
             outputs = {
                 "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss,

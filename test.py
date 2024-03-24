@@ -1,5 +1,4 @@
-import numpy as np
+import torch
 
-a = np.array([1, 2, 3, 4])
-x, y, k, l = a
-print(x, y, k, l)
+a = torch.randn(2, 3, 1,1)
+print(len(a))
