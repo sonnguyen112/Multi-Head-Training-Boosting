@@ -70,6 +70,9 @@ class YOLOXStudent(nn.Module):
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
+                # Normalize the feature by z-score
+                student_feature = (student_feature - student_feature.mean(dim=[2,3], keepdim=True)) / student_feature.std(dim=[2,3], keepdim=True)
+                teacher_feature = (teacher_feature - teacher_feature.mean(dim=[2,3], keepdim=True)) / teacher_feature.std(dim=[2,3], keepdim=True)
                 s_relation = self.student_non_local[i](student_feature)
                 t_relation = self.teacher_non_local[i](teacher_feature)
                 # print(s_relation.shape, t_relation.shape)
