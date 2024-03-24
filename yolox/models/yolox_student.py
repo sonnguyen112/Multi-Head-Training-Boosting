@@ -66,7 +66,9 @@ class YOLOXStudent(nn.Module):
             kd_nonlocal_loss = 0
             kd_foreground_loss=0
 
-            t_feature_map[x] = t_model.backbone(x)
+            t_feature = t_model.backbone(x)
+            for i in range(len(t_feature)):
+                t_feature_map[x[i]] = (t_feature[0][i], t_feature[1][i], t_feature[2][i])
             # for i in range(3):
             #     student_feature = fpn_outs[i]
             #     teacher_feature = t_model.backbone(x)[i]
