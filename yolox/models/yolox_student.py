@@ -56,7 +56,6 @@ class YOLOXStudent(nn.Module):
         # fpn output content features of [dark3, dark4, dark5]
         # print(t_model)
         fpn_outs = self.backbone(x)
-        t_feat =  t_model.backbone(x)
         # print(fpn_outs[0].shape, fpn_outs[1].shape, fpn_outs[2].shape)
         if self.training:
             assert targets is not None
@@ -66,7 +65,7 @@ class YOLOXStudent(nn.Module):
 
             kd_nonlocal_loss = 0
             kd_foreground_loss=0
-
+            t_feat = t_model.backbone(x)
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
