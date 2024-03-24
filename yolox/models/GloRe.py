@@ -89,6 +89,7 @@ class GloRe_Unit(nn.Module):
         x_state = x_state_reshaped.view(n, self.num_s, *x.size()[2:])
         # -----------------
         # (n, num_state, h, w) -> (n, num_in, h, w)
+        x_state = self.blocker(x_state)
         print(self.conv_extend(x_state))
         out = x + self.blocker(self.conv_extend(x_state))
         # print(out)
