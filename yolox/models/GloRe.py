@@ -49,6 +49,7 @@ class GloRe_Unit(nn.Module):
         self.conv_extend = ConvNd(self.num_s, num_in, kernel_size=1, bias=False)
 
         self.blocker = BatchNormNd(num_in, eps=1e-04) # should be zero initialized
+        self.reduce_value = BatchNormNd(self.num_s, eps=1e-04) # should be zero initialized
 
 
     def forward(self, x):
@@ -89,7 +90,7 @@ class GloRe_Unit(nn.Module):
         x_state = x_state_reshaped.view(n, self.num_s, *x.size()[2:])
         # -----------------
         # (n, num_state, h, w) -> (n, num_in, h, w)
-        x_state = self.blocker(x_state)
+        x_state = self.reduce_value(x_state)
         print(self.conv_extend(x_state))
         out = x + self.blocker(self.conv_extend(x_state))
         # print(out)
