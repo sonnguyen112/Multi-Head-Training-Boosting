@@ -28,6 +28,7 @@ from yolox.utils import (
 import datetime
 import os
 import time
+from torch.nn.utils import clip_grad_norm_
 
 
 class TeacherStudentTrainer:
@@ -108,6 +109,7 @@ class TeacherStudentTrainer:
 
         self.optimizer.zero_grad()
         self.scaler.scale(loss).backward()
+        clip_grad_norm_(self.model.parameters(), max_norm=5.0)
         self.scaler.step(self.optimizer)
         self.scaler.update()
 
