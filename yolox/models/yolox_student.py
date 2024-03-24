@@ -51,6 +51,8 @@ class YOLOXStudent(nn.Module):
             nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
             nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
         ])
+        self.prev_kd_nonlocal_loss=0
+        self.prev_kd_foreground_loss = 0
 
     def forward(self, x, targets=None, t_model = None, t_feature_map = None):
         # fpn output content features of [dark3, dark4, dark5]
@@ -64,7 +66,7 @@ class YOLOXStudent(nn.Module):
             )
 
             kd_nonlocal_loss = 0
-            kd_foreground_loss=0
+            kd_foreground_loss = 0
             t_feat = t_model.backbone(x)
             for i in range(3):
                 student_feature = fpn_outs[i]
@@ -75,10 +77,17 @@ class YOLOXStudent(nn.Module):
                 # print(student_feature.shape, teacher_feature.shape)
                 nonlocal_val = torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
                 foreground_val = torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
-                if not torch.isnan(nonlocal_val).any():
-                    kd_nonlocal_loss += nonlocal_val
-                if not torch.isnan(foreground_val).any():
-                    kd_foreground_loss += foreground_val
+                if torch.isnan(nonlocal_val):
+                    kd_nonlocal_loss = self.prev_kd_nonlocal_loss + 10
+                else:
+                    kd_nonlocal_loss = nonlocal_val
+                    self.prev_kd_nonlocal_loss = kd_nonlocal_loss
+                if torch.isnan(foreground_val):
+                    kd_foreground_loss = self.prev_kd_foreground_loss + 10
+                else:
+                    kd_foreground_loss = foreground_val
+                    self.prev_kd_foreground_loss = kd_foreground_loss
+
             kd_nonlocal_loss *= 0.004
             kd_foreground_loss *= 0.006
                 
