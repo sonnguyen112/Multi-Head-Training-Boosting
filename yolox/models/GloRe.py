@@ -64,7 +64,6 @@ class GloRe_Unit(nn.Module):
         # (n, num_in, h, w) --> (n, num_node, h, w)
         #                   --> (n, num_node, h*w)
         x_proj_reshaped = self.conv_proj(x).view(n, self.num_n, -1)
-        print(x_proj_reshaped)
 
         # (n, num_in, h, w) --> (n, num_node, h, w)
         #                   --> (n, num_node, h*w)
@@ -75,6 +74,7 @@ class GloRe_Unit(nn.Module):
         # projection: coordinate space -> interaction space
         # (n, num_state, h*w) x (n, num_node, h*w)T --> (n, num_state, num_node)
         x_n_state = torch.matmul(x_state_reshaped, x_proj_reshaped.permute(0, 2, 1))
+        print(x_n_state.shape)
         if self.normalize:
             x_n_state = x_n_state * (1. / x_state_reshaped.size(2))
 
