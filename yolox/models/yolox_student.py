@@ -72,8 +72,7 @@ class YOLOXStudent(nn.Module):
                 teacher_feature = t_feat[i]
                 # Normalize the feature by min-max
                 student_feature = (student_feature - student_feature.min()) / (student_feature.max() - student_feature.min())
-                print(student_feature.max(), teacher_feature.max())
-                exit()
+                teacher_feature = (teacher_feature - teacher_feature.min()) / (teacher_feature.max() - teacher_feature.min())
                 s_relation = self.student_non_local[i](student_feature)
                 t_relation = self.teacher_non_local[i](teacher_feature)
                 # print(s_relation.shape, t_relation.shape)
