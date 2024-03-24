@@ -83,7 +83,7 @@ class GloRe_Unit(nn.Module):
         # reverse projection: interaction space -> coordinate space
         # (n, num_state, num_node) x (n, num_node, h*w) --> (n, num_state, h*w)
         x_state_reshaped = torch.matmul(x_n_rel, x_rproj_reshaped)
-
+        print(x_state_reshaped.max())
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
         # (n, num_state, h*w) --> (n, num_state, h, w)
@@ -91,7 +91,6 @@ class GloRe_Unit(nn.Module):
         # -----------------
         # (n, num_state, h, w) -> (n, num_in, h, w)
         # x_state = self.reduce_value(x_state)
-        print(x_state.max())
         # x_state = (x_state - x_state.min()) / (x_state.max() - x_state.min() + 1e-5)
         # x_state = (x_state - x_state.mean()) / (x_state.std() + 1e-5)
         # if torch.isnan(self.conv_extend(x_state)).any():
