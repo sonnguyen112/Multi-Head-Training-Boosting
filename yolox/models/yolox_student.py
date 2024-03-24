@@ -8,6 +8,7 @@ from .yolo_head import YOLOXHead
 from .yolo_pafpn import YOLOPAFPN
 import torch
 from .GloRe import GloRe_Unit_2D
+import math
 
 
 class YOLOXStudent(nn.Module):
@@ -75,12 +76,14 @@ class YOLOXStudent(nn.Module):
                 # print(student_feature.shape, teacher_feature.shape)
                 nonlocal_val = torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
                 foreground_val = torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
-                kd_nonlocal_loss += nonlocal_val
-                kd_foreground_loss += foreground_val
-                if torch.isnan(kd_nonlocal_loss).any():
+                if torch.isnan(nonlocal_val):
+                    kd_nonlocal_loss = 10000
+                else:
+                    kd_nonlocal_loss += nonlocal_val
+                if torch.isnan(foreground_val):
                     kd_foreground_loss = 10000
-                if torch.isnan(kd_foreground_loss).any():
-                    kd_foreground_loss = 10000
+                else:
+                    kd_foreground_loss += foreground_val
 
             kd_nonlocal_loss *= 0.004
             kd_foreground_loss *= 0.006
