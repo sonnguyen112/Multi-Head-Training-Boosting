@@ -224,11 +224,6 @@ class TeacherStudentTrainer:
         if (self.epoch + 1) % self.exp.eval_interval == 0:
             all_reduce_norm(self.model)
             self.evaluate_and_save_model()
-        
-        import pickle
-        with open('t_feature_map.pkl', 'wb') as f:
-            pickle.dump(self.t_feature_map, f)
-        exit()
 
     def before_iter(self):
         pass
