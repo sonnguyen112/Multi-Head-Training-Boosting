@@ -109,6 +109,7 @@ class TeacherStudentTrainer:
 
         self.optimizer.zero_grad()
         self.scaler.scale(loss).backward()
+        clip_grad_norm_(self.model.parameters(), max_norm=5.0)
         self.scaler.step(self.optimizer)
         self.scaler.update()
 
