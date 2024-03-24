@@ -68,8 +68,9 @@ class YOLOXStudent(nn.Module):
 
             t_feature = t_model.backbone(x)
             for i in range(len(x)):
-                t_feature_map[x[i]] = (t_feature[0][i], t_feature[1][i], t_feature[2][i])
-                print(t_feature_map[x[i]][0].shape, t_feature_map[x[i]][1].shape, t_feature_map[x[i]][2].shape)
+                key = x[i].to("cpu").numpy()
+                t_feature_map[key] = (t_feature[0][i], t_feature[1][i], t_feature[2][i])
+                print(t_feature_map[key][0].shape, t_feature_map[key][1].shape, t_feature_map[key][2].shape)
             # for i in range(3):
             #     student_feature = fpn_outs[i]
             #     teacher_feature = t_model.backbone(x)[i]
