@@ -91,6 +91,7 @@ class GloRe_Unit(nn.Module):
         # -----------------
         # (n, num_state, h, w) -> (n, num_in, h, w)
         # x_state = self.reduce_value(x_state)
+        x_state = (x_state - x_state.mean()) / (x_state.std() + 1e-5)
         if torch.isnan(self.conv_extend(x_state)).any():
             print(self.conv_extend(x_state))
             exit()
