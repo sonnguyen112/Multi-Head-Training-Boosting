@@ -77,11 +77,11 @@ class YOLOXStudent(nn.Module):
                 nonlocal_val = torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
                 foreground_val = torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
                 if torch.isnan(nonlocal_val):
-                    kd_nonlocal_loss = 10000
+                    kd_nonlocal_loss = 20000
                 else:
                     kd_nonlocal_loss += nonlocal_val
                 if torch.isnan(foreground_val):
-                    kd_foreground_loss = 10000
+                    kd_foreground_loss = 20000
                 else:
                     kd_foreground_loss += foreground_val
 
