@@ -35,7 +35,35 @@ class YOLOXStudent(nn.Module):
                 GloRe_Unit_2D(512,512),
             ]
         )
+        self.student_non_local_reg_head = nn.ModuleList(
+            [   
+                GloRe_Unit_2D(128,128),
+                GloRe_Unit_2D(256,256),
+                GloRe_Unit_2D(512,512),
+            ]
+        )
+        self.student_non_local_cls_head = nn.ModuleList(
+            [   
+                GloRe_Unit_2D(128,128),
+                GloRe_Unit_2D(256,256),
+                GloRe_Unit_2D(512,512),
+            ]
+        )
         self.teacher_non_local = nn.ModuleList(
+            [
+                GloRe_Unit_2D(320,320),
+                GloRe_Unit_2D(640,640),
+                GloRe_Unit_2D(1280,1280),
+            ]
+        )
+        self.teacher_non_local_reg_head = nn.ModuleList(
+            [
+                GloRe_Unit_2D(320,320),
+                GloRe_Unit_2D(640,640),
+                GloRe_Unit_2D(1280,1280),
+            ]
+        )
+        self.teacher_non_local_cls_head = nn.ModuleList(
             [
                 GloRe_Unit_2D(320,320),
                 GloRe_Unit_2D(640,640),
@@ -47,16 +75,43 @@ class YOLOXStudent(nn.Module):
             nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
             nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
         ])
+        self.non_local_adaptation_reg_head = nn.ModuleList([
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+        ])
+        self.non_local_adaptation_cls_head = nn.ModuleList([
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+        ])
         self.for_adaptation = nn.ModuleList([
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
             nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
             nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
         ])
+        self.reg_head_adaptation = nn.ModuleList([
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+        ])
+        self.cls_head_adaptation = nn.ModuleList([
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+        ])
+        self.out_head_adaptation = nn.ModuleList([
+            nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
+        ])
+
 
     def forward(self, x, targets=None, t_model = None):
         # fpn output content features of [dark3, dark4, dark5]
         # print(t_model)
         fpn_outs = self.backbone(x)
+        s_reg_head_feat, s_cls_head_feat, s_output_head = self.head.kf_forward(fpn_outs)
         # if t_model is not None:
         #     test = t_model.head.raw_inference(fpn_outs)
         #     print(fpn_outs[0].shape)
@@ -71,10 +126,14 @@ class YOLOXStudent(nn.Module):
 
             kd_nonlocal_loss = 0
             kd_foreground_loss = 0
+            kd_reg_head_loss = 0
+            kd_glore_reg_loss = 0
+            kd_cls_head_loss = 0
+            kd_glore_cls_loss = 0
+            kd_out_head_loss = 0
             t_feat = t_model.backbone(x)
             t_reg_head_feat, t_cls_head_feat, t_output_head = t_model.head.kf_forward(t_feat)
-            print(t_reg_head_feat[0].shape, t_cls_head_feat[0].shape, t_output_head[0].shape)
-            exit()
+
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
@@ -88,18 +147,48 @@ class YOLOXStudent(nn.Module):
                 kd_nonlocal_loss += torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
                 kd_foreground_loss += torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
 
+                student_reg_feat = s_reg_head_feat[i]
+                teacher_reg_feat = t_reg_head_feat[i]
+                student_cls_feat = s_cls_head_feat[i]
+                teacher_cls_feat = t_cls_head_feat[i]
+                student_out = s_output_head[i]
+                teacher_out = t_output_head[i]
+
+                kd_reg_head_loss += torch.dist(self.reg_head_adaptation[i](student_reg_feat), teacher_reg_feat, p=2)
+                kd_cls_head_loss += torch.dist(self.cls_head_adaptation[i](student_cls_feat), teacher_cls_feat, p=2)
+                kd_out_head_loss += torch.dist(self.out_head_adaptation[i](student_out), teacher_out, p=2)
+
+                s_reg_head_relation = self.student_non_local_reg_head[i](student_reg_feat)
+                t_reg_head_relation = self.teacher_non_local_reg_head[i](teacher_reg_feat)
+                kd_glore_reg_loss += torch.dist(self.non_local_adaptation_reg_head[i](s_reg_head_relation), t_reg_head_relation, p=2)
+
+                s_cls_head_relation = self.student_non_local_cls_head[i](student_cls_feat)
+                t_cls_head_relation = self.teacher_non_local_cls_head[i](teacher_cls_feat)
+                kd_glore_cls_loss += torch.dist(self.non_local_adaptation_cls_head[i](s_cls_head_relation), t_cls_head_relation, p=2)
+
+
             kd_nonlocal_loss *= 0.004
             kd_foreground_loss *= 0.006
+            kd_reg_head_loss *= 0.005
+            kd_glore_reg_loss *= 0.005
+            kd_cls_head_loss *= 0.005
+            kd_glore_cls_loss *= 0.005
+            kd_out_head_loss *= 0.005
                 
             outputs = {
-                "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss,
+                "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss + kd_reg_head_loss + kd_glore_reg_loss + kd_cls_head_loss + kd_glore_cls_loss + kd_out_head_loss,
                 "iou_loss": iou_loss,
                 "l1_loss": l1_loss,
                 "conf_loss": conf_loss,
                 "cls_loss": cls_loss,
                 "num_fg": num_fg,
                 "kd_foreground_loss": kd_foreground_loss,
-                "kd_nonlocal_loss": kd_nonlocal_loss
+                "kd_nonlocal_loss": kd_nonlocal_loss,
+                "kd_reg_head_loss": kd_reg_head_loss,
+                "kd_glore_reg_loss": kd_glore_reg_loss,
+                "kd_cls_head_loss": kd_cls_head_loss,
+                "kd_glore_cls_loss": kd_glore_cls_loss,
+                "kd_out_head_loss": kd_out_head_loss
             }
         else:
             outputs = self.head(fpn_outs)
