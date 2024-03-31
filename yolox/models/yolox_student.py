@@ -158,6 +158,7 @@ class YOLOXStudent(nn.Module):
                 student_cls_feat = (student_cls_feat - student_cls_feat.min()) / (student_cls_feat.max() - student_cls_feat.min())
                 teacher_cls_feat = (teacher_cls_feat - teacher_cls_feat.min()) / (teacher_cls_feat.max() - teacher_cls_feat.min())
                 student_out = (student_out - student_out.min()) / (student_out.max() - student_out.min())
+                teacher_out = (teacher_out - teacher_out.min()) / (teacher_out.max() - teacher_out.min())
 
                 kd_reg_head_loss += torch.dist(self.reg_head_adaptation[i](student_reg_feat), teacher_reg_feat, p=2)
                 kd_cls_head_loss += torch.dist(self.cls_head_adaptation[i](student_cls_feat), teacher_cls_feat, p=2)
