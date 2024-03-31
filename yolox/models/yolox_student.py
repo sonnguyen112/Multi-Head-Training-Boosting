@@ -100,11 +100,11 @@ class YOLOXStudent(nn.Module):
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
         ])
-        self.out_head_adaptation = nn.ModuleList([
-            nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
-        ])
+        # self.out_head_adaptation = nn.ModuleList([
+        #     nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
+        # ])
 
 
     def forward(self, x, targets=None, t_model = None):
@@ -129,7 +129,7 @@ class YOLOXStudent(nn.Module):
             kd_glore_reg_loss = 0
             kd_cls_head_loss = 0
             kd_glore_cls_loss = 0
-            kd_out_head_loss = 0
+            # kd_out_head_loss = 0
             t_feat = t_model.backbone(x)
             t_reg_head_feat, t_cls_head_feat, t_output_head = t_model.head.kf_forward(t_feat)
 
@@ -150,19 +150,19 @@ class YOLOXStudent(nn.Module):
                 teacher_reg_feat = t_reg_head_feat[i]
                 student_cls_feat = s_cls_head_feat[i]
                 teacher_cls_feat = t_cls_head_feat[i]
-                student_out = s_output_head[i]
-                teacher_out = t_output_head[i]
+                # student_out = s_output_head[i]
+                # teacher_out = t_output_head[i]
                 # Normalize the feature by min-max
                 student_reg_feat = (student_reg_feat - student_reg_feat.min()) / (student_reg_feat.max() - student_reg_feat.min())
                 teacher_reg_feat = (teacher_reg_feat - teacher_reg_feat.min()) / (teacher_reg_feat.max() - teacher_reg_feat.min())
                 student_cls_feat = (student_cls_feat - student_cls_feat.min()) / (student_cls_feat.max() - student_cls_feat.min())
                 teacher_cls_feat = (teacher_cls_feat - teacher_cls_feat.min()) / (teacher_cls_feat.max() - teacher_cls_feat.min())
-                student_out = (student_out - student_out.min()) / (student_out.max() - student_out.min())
-                teacher_out = (teacher_out - teacher_out.min()) / (teacher_out.max() - teacher_out.min())
+                # student_out = (student_out - student_out.min()) / (student_out.max() - student_out.min())
+                # teacher_out = (teacher_out - teacher_out.min()) / (teacher_out.max() - teacher_out.min())
 
                 kd_reg_head_loss += torch.dist(self.reg_head_adaptation[i](student_reg_feat), teacher_reg_feat, p=2)
                 kd_cls_head_loss += torch.dist(self.cls_head_adaptation[i](student_cls_feat), teacher_cls_feat, p=2)
-                kd_out_head_loss += torch.dist(self.out_head_adaptation[i](student_out), teacher_out, p=2)
+                # kd_out_head_loss += torch.dist(self.out_head_adaptation[i](student_out), teacher_out, p=2)
 
                 s_reg_head_relation = self.student_non_local_reg_head[i](student_reg_feat)
                 t_reg_head_relation = self.teacher_non_local_reg_head[i](teacher_reg_feat)
@@ -179,10 +179,10 @@ class YOLOXStudent(nn.Module):
             kd_glore_reg_loss *= 0.005
             kd_cls_head_loss *= 0.005
             kd_glore_cls_loss *= 0.005
-            kd_out_head_loss *= 0.005
+            # kd_out_head_loss *= 0.005
                 
             outputs = {
-                "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss + kd_reg_head_loss + kd_glore_reg_loss + kd_cls_head_loss + kd_glore_cls_loss + kd_out_head_loss,
+                "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss + kd_reg_head_loss + kd_glore_reg_loss + kd_cls_head_loss + kd_glore_cls_loss,
                 "iou_loss": iou_loss,
                 "l1_loss": l1_loss,
                 "conf_loss": conf_loss,
@@ -194,7 +194,7 @@ class YOLOXStudent(nn.Module):
                 "kd_glore_reg_loss": kd_glore_reg_loss,
                 "kd_cls_head_loss": kd_cls_head_loss,
                 "kd_glore_cls_loss": kd_glore_cls_loss,
-                "kd_out_head_loss": kd_out_head_loss
+                # "kd_out_head_loss": kd_out_head_loss
             }
         else:
             outputs = self.head(fpn_outs)
