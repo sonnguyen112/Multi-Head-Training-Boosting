@@ -38,15 +38,15 @@ class YOLOXStudent(nn.Module):
         self.student_non_local_reg_head = nn.ModuleList(
             [   
                 GloRe_Unit_2D(128,128),
-                GloRe_Unit_2D(256,256),
-                GloRe_Unit_2D(512,512),
+                GloRe_Unit_2D(128,128),
+                GloRe_Unit_2D(128,128),
             ]
         )
         self.student_non_local_cls_head = nn.ModuleList(
             [   
                 GloRe_Unit_2D(128,128),
-                GloRe_Unit_2D(256,256),
-                GloRe_Unit_2D(512,512),
+                GloRe_Unit_2D(128,128),
+                GloRe_Unit_2D(128,128),
             ]
         )
         self.teacher_non_local = nn.ModuleList(
@@ -59,15 +59,15 @@ class YOLOXStudent(nn.Module):
         self.teacher_non_local_reg_head = nn.ModuleList(
             [
                 GloRe_Unit_2D(320,320),
-                GloRe_Unit_2D(640,640),
-                GloRe_Unit_2D(1280,1280),
+                GloRe_Unit_2D(320,320),
+                GloRe_Unit_2D(320,320),
             ]
         )
         self.teacher_non_local_cls_head = nn.ModuleList(
             [
                 GloRe_Unit_2D(320,320),
-                GloRe_Unit_2D(640,640),
-                GloRe_Unit_2D(1280,1280),
+                GloRe_Unit_2D(320,320),
+                GloRe_Unit_2D(320,320),
             ]
         )
         self.non_local_adaptation = nn.ModuleList([
@@ -77,13 +77,13 @@ class YOLOXStudent(nn.Module):
         ])
         self.non_local_adaptation_reg_head = nn.ModuleList([
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
         ])
         self.non_local_adaptation_cls_head = nn.ModuleList([
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
         ])
         self.for_adaptation = nn.ModuleList([
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
@@ -92,13 +92,13 @@ class YOLOXStudent(nn.Module):
         ])
         self.reg_head_adaptation = nn.ModuleList([
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
         ])
         self.cls_head_adaptation = nn.ModuleList([
             nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
         ])
         self.out_head_adaptation = nn.ModuleList([
             nn.Conv2d(6, 6, kernel_size=1, stride=1, padding=0),
