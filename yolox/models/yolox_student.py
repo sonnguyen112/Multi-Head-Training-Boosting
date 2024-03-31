@@ -195,6 +195,7 @@ class YOLOXStudent(nn.Module):
                 "kd_glore_cls_loss": kd_glore_cls_loss,
                 "kd_out_head_loss": kd_out_head_loss
             }
+            print(outputs)
         else:
             outputs = self.head(fpn_outs)
 
