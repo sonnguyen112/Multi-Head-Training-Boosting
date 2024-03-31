@@ -272,9 +272,7 @@ class YOLOXHead(nn.Module):
             outputs.append(output)
             reg_feats.append(reg_feat)
             cls_feats.append(cls_feat)
-            outputs_kd.append(torch.cat(
-                    [reg_output, obj_output.sigmoid(), cls_output.sigmoid()], 1
-                ))
+            outputs_kd.append(torch.cat([reg_output, obj_output, cls_output], 1))
 
         if self.training:
             return self.get_losses(

@@ -1,4 +1,5 @@
-import torch
+def a():
+    return (1, 2, 3), 7, 8, 9
 
-a = torch.randn(2, 3, 1,1)
-print(len(a))
+(x, u, i), o, g, k = a()
+print(x, u, i, o, g, k)
