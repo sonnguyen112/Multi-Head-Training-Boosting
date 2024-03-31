@@ -53,10 +53,15 @@ class YOLOXStudent(nn.Module):
             nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
         ])
 
-    def forward(self, x, targets=None, t_model = None, t_feature_map = None):
+    def forward(self, x, targets=None, t_model = None):
         # fpn output content features of [dark3, dark4, dark5]
         # print(t_model)
         fpn_outs = self.backbone(x)
+        # if t_model is not None:
+        #     test = t_model.head.raw_inference(fpn_outs)
+        #     print(fpn_outs[0].shape)
+        #     print(test[0].shape)
+        #     exit()
         # print(fpn_outs[0].shape, fpn_outs[1].shape, fpn_outs[2].shape)
         if self.training:
             assert targets is not None
@@ -67,6 +72,9 @@ class YOLOXStudent(nn.Module):
             kd_nonlocal_loss = 0
             kd_foreground_loss = 0
             t_feat = t_model.backbone(x)
+            t_reg_head_feat, t_cls_head_feat, t_output_head = t_model.head.kf_forward(t_feat)
+            print(t_reg_head_feat[0].shape, t_cls_head_feat[0].shape, t_output_head[0].shape)
+            exit()
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]

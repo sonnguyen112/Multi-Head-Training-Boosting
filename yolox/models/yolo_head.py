@@ -165,6 +165,7 @@ class YOLOXHead(nn.Module):
 
             if self.training:
                 output = torch.cat([reg_output, obj_output, cls_output], 1)
+
                 output, grid = self.get_output_and_grid(
                     output, k, stride_this_level, xin[0].type()
                 )
@@ -214,6 +215,38 @@ class YOLOXHead(nn.Module):
                 return self.decode_outputs(outputs, dtype=xin[0].type())
             else:
                 return outputs
+            
+    def kf_forward(self, xin, labels=None, imgs=None):
+        outputs = []
+        origin_preds = []
+        x_shifts = []
+        y_shifts = []
+        expanded_strides = []
+        reg_feats = []
+        cls_feats = []
+
+        for k, (cls_conv, reg_conv, stride_this_level, x) in enumerate(
+            zip(self.cls_convs, self.reg_convs, self.strides, xin)
+        ):
+            x = self.stems[k](x)
+            cls_x = x
+            reg_x = x
+
+            cls_feat = cls_conv(cls_x)
+            cls_output = self.cls_preds[k](cls_feat)
+
+            reg_feat = reg_conv(reg_x)
+            reg_output = self.reg_preds[k](reg_feat)
+            obj_output = self.obj_preds[k](reg_feat)
+            output = torch.cat(
+                    [reg_output, obj_output.sigmoid(), cls_output.sigmoid()], 1
+                )
+            reg_feats.append(reg_feat)
+            cls_feats.append(cls_feat)
+            outputs.append(output)
+        return reg_feats, cls_feats, outputs
+        
+        
 
     def get_output_and_grid(self, output, k, stride, dtype):
         grid = self.grids[k]
@@ -394,7 +427,6 @@ class YOLOXHead(nn.Module):
         fg_masks = torch.cat(fg_masks, 0)
         if self.use_l1:
             l1_targets = torch.cat(l1_targets, 0)
-
         num_fg = max(num_fg, 1)
         loss_iou = (
             self.iou_loss(bbox_preds.view(-1, 4)[fg_masks], reg_targets)

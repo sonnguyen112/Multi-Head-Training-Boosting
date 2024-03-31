@@ -60,7 +60,7 @@ class StudentExp(BaseExp):
         self.nmsthre = 0.65
 
     def get_model(self):
-        from yolox.models import YOLOPAFPN, YOLOX, YOLOXHead, YOLOXStudent
+        from yolox.models import YOLOPAFPN, YOLOXHead, YOLOXStudent
 
         def init_yolo(M):
             for m in M.modules():
