@@ -263,16 +263,16 @@ class YOLOXHead(nn.Module):
                         batch_size, -1, 4
                     )
                     origin_preds.append(reg_output.clone())
+                outputs.append(output)
+                reg_feats.append(reg_feat)
+                cls_feats.append(cls_feat)
+                outputs_kd.append(torch.cat([reg_output, obj_output, cls_output], 1))
 
             else:
                 output = torch.cat(
                     [reg_output, obj_output.sigmoid(), cls_output.sigmoid()], 1
                 )
 
-            outputs.append(output)
-            reg_feats.append(reg_feat)
-            cls_feats.append(cls_feat)
-            outputs_kd.append(torch.cat([reg_output, obj_output, cls_output], 1))
 
         if self.training:
             return self.get_losses(
