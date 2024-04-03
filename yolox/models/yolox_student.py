@@ -131,7 +131,7 @@ class YOLOXStudent(nn.Module):
             kd_glore_cls_loss = 0
             # kd_out_head_loss = 0
             t_feat = t_model.backbone(x)
-            t_reg_head_feat, t_cls_head_feat, t_output_head = t_model.head.kf_forward(t_feat)
+            t_reg_head_feat, t_cls_head_feat = t_model.head.kf_forward(t_feat)
 
             for i in range(3):
                 student_feature = fpn_outs[i]
