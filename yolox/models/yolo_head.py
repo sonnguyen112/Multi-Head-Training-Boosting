@@ -14,7 +14,6 @@ import math
 
 from .losses import IOUloss
 from .network_blocks import BaseConv, DWConv
-import copy
 
 
 class YOLOXHead(nn.Module):
@@ -225,7 +224,6 @@ class YOLOXHead(nn.Module):
         expanded_strides = []
         reg_feats = []
         cls_feats = []
-        outputs_kd = []
 
         for k, (cls_conv, reg_conv, stride_this_level, x) in enumerate(
             zip(self.cls_convs, self.reg_convs, self.strides, xin)
@@ -243,7 +241,6 @@ class YOLOXHead(nn.Module):
 
             if self.training:
                 output = torch.cat([reg_output, obj_output, cls_output], 1)
-                output_kd = copy.deepcopy(output)
                 output, grid = self.get_output_and_grid(
                     output, k, stride_this_level, xin[0].type()
                 )
@@ -273,7 +270,6 @@ class YOLOXHead(nn.Module):
             outputs.append(output)
             reg_feats.append(reg_feat)
             cls_feats.append(cls_feat)
-            outputs_kd.append(output_kd)
 
         if self.training:
             return self.get_losses(
@@ -285,9 +281,9 @@ class YOLOXHead(nn.Module):
                 torch.cat(outputs, 1),
                 origin_preds,
                 dtype=xin[0].dtype,
-            ), reg_feats, cls_feats, outputs_kd
+            ), reg_feats, cls_feats
         else:
-            return reg_feats, cls_feats, outputs_kd
+            return reg_feats, cls_feats
 
     def get_output_and_grid(self, output, k, stride, dtype):
         grid = self.grids[k]

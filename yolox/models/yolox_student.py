@@ -119,7 +119,7 @@ class YOLOXStudent(nn.Module):
         # print(fpn_outs[0].shape, fpn_outs[1].shape, fpn_outs[2].shape)
         if self.training:
             assert targets is not None
-            (loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg), s_reg_head_feat, s_cls_head_feat, s_output_head = self.head.kf_forward(
+            (loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg), s_reg_head_feat, s_cls_head_feat = self.head.kf_forward(
                 fpn_outs, targets, x
             )
 
