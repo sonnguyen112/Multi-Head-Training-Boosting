@@ -162,9 +162,9 @@ class YOLOXStudent(nn.Module):
                 s_region=roi_align(student_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=student_feature.shape[-1] / 1440)
                 t_region=roi_align(teacher_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=teacher_feature.shape[-1] / 1440)
                 s_object_relation = self.student_relation[i](s_region)
+                t_object_relation = self.teacher_relation[i](t_region)
                 print(s_object_relation.shape)
                 exit()
-                t_object_relation = self.teacher_relation[i](t_region)
                 kd_relation_loss += torch.dist(self.relation_adaptation[i](s_object_relation), t_object_relation, p=2)
 
 
