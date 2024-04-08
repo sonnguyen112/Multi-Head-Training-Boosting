@@ -121,14 +121,12 @@ class YOLOXStudent(nn.Module):
             loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg = self.head(
                 fpn_outs, targets, x
             )
-            print(targets.shape)
             mixup = targets.shape[2] > 5
             if mixup:
                 label_cut = targets[..., :5]
             else:
                 label_cut = targets
             nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
-            print(nlabel)
             batch_gt_bboxes = []
             for batch_idx in range(targets.shape[0]):
                 num_gt = int(nlabel[batch_idx])
@@ -163,9 +161,6 @@ class YOLOXStudent(nn.Module):
                 t_region=roi_align(teacher_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=teacher_feature.shape[-1] / 1440)
                 s_object_relation = self.student_relation[i](s_region)
                 t_object_relation = self.teacher_relation[i](t_region)
-                print(s_object_relation.shape)
-                print(t_object_relation.shape)
-                exit()
                 kd_relation_loss += torch.dist(self.relation_adaptation[i](s_object_relation), t_object_relation, p=2)
 
 
