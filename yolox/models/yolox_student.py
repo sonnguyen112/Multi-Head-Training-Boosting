@@ -149,15 +149,15 @@ class YOLOXStudent(nn.Module):
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
-                # # Normalize the feature by min-max
-                # student_feature = (student_feature - student_feature.min()) / (student_feature.max() - student_feature.min())
-                # teacher_feature = (teacher_feature - teacher_feature.min()) / (teacher_feature.max() - teacher_feature.min())
-                # s_relation = self.student_non_local[i](student_feature)
-                # t_relation = self.teacher_non_local[i](teacher_feature)
-                # # print(s_relation.shape, t_relation.shape)
-                # # print(student_feature.shape, teacher_feature.shape)
-                # kd_nonlocal_loss += torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
-                # kd_foreground_loss += torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
+                # Normalize the feature by min-max
+                student_feature = (student_feature - student_feature.min()) / (student_feature.max() - student_feature.min())
+                teacher_feature = (teacher_feature - teacher_feature.min()) / (teacher_feature.max() - teacher_feature.min())
+                s_relation = self.student_non_local[i](student_feature)
+                t_relation = self.teacher_non_local[i](teacher_feature)
+                # print(s_relation.shape, t_relation.shape)
+                # print(student_feature.shape, teacher_feature.shape)
+                kd_nonlocal_loss += torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
+                kd_foreground_loss += torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
 
                 s_region=roi_align(student_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=student_feature.shape[-1] / 1440)
                 t_region=roi_align(teacher_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=teacher_feature.shape[-1] / 1440)
