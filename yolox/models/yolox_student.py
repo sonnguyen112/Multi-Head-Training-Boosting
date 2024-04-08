@@ -164,6 +164,7 @@ class YOLOXStudent(nn.Module):
                 s_object_relation = self.student_relation[i](s_region)
                 t_object_relation = self.teacher_relation[i](t_region)
                 print(s_object_relation.shape)
+                print(t_object_relation.shape)
                 exit()
                 kd_relation_loss += torch.dist(self.relation_adaptation[i](s_object_relation), t_object_relation, p=2)
 
