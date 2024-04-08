@@ -1,5 +1,6 @@
-def a():
-    return (1, 2, 3), 7, 8, 9
+import torch
 
-(x, u, i), o, g, k = a()
-print(x, u, i, o, g, k)
+test_tensor = torch.tensor([1, 2, 3, 4])
+a = test_tensor
+a[1] = 0
+print(test_tensor)
