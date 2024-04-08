@@ -93,16 +93,16 @@ class YOLOXStudent(nn.Module):
         ])
         self.student_relation = nn.ModuleList(
             [
-                ObjectRelation_1(in_channels=128),
-                ObjectRelation_1(in_channels=256),
-                ObjectRelation_1(in_channels=512),
+                ObjectRelation_1(in_channels=128 * 9),
+                ObjectRelation_1(in_channels=256 * 9),
+                ObjectRelation_1(in_channels=512 * 9),
             ]
         )
         self.teacher_relation = nn.ModuleList(
             [
-                ObjectRelation_1(in_channels=320),
-                ObjectRelation_1(in_channels=640),
-                ObjectRelation_1(in_channels=1280),
+                ObjectRelation_1(in_channels=320 * 9),
+                ObjectRelation_1(in_channels=640 * 9),
+                ObjectRelation_1(in_channels=1280 * 9),
             ]
         )
         self.relation_adaptation = nn.ModuleList([
