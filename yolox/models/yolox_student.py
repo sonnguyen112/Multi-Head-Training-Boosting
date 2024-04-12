@@ -147,6 +147,8 @@ class YOLOXStudent(nn.Module):
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
+                print(student_feature.shape, teacher_feature.shape)
+                exit()
                 # Normalize the feature by min-max
                 student_feature = (student_feature - student_feature.min()) / (student_feature.max() - student_feature.min())
                 teacher_feature = (teacher_feature - teacher_feature.min()) / (teacher_feature.max() - teacher_feature.min())
