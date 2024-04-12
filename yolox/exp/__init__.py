@@ -6,3 +6,4 @@ from .base_exp import BaseExp
 from .build import get_exp
 from .yolox_base import Exp
 from .yolox_student_base import StudentExp
+from .yolox_student_base_1 import StudentExp1
