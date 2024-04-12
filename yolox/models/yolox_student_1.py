@@ -147,6 +147,7 @@ class YOLOXStudent1(nn.Module):
             for i in range(3):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
+                teacher_feature = teacher_feature[:, :student_feature.shape[1], :, :]
                 print(student_feature.shape, teacher_feature.shape)
                 exit()
                 # Normalize the feature by min-max
