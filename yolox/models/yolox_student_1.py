@@ -91,25 +91,25 @@ class YOLOXStudent1(nn.Module):
             nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0),
             nn.Conv2d(512, 512, kernel_size=1, stride=1, padding=0),
         ])
-        # self.student_relation = nn.ModuleList(
-        #     [
-        #         ObjectRelation_1(in_channels=128 * 9),
-        #         ObjectRelation_1(in_channels=256 * 9),
-        #         ObjectRelation_1(in_channels=512 * 9),
-        #     ]
-        # )
-        # self.teacher_relation = nn.ModuleList(
-        #     [
-        #         ObjectRelation_1(in_channels=320 * 9),
-        #         ObjectRelation_1(in_channels=640 * 9),
-        #         ObjectRelation_1(in_channels=1280 * 9),
-        #     ]
-        # )
-        # self.relation_adaptation = nn.ModuleList([
-        #     nn.Conv2d(128, 320, kernel_size=1, stride=1, padding=0),
-        #     nn.Conv2d(256, 640, kernel_size=1, stride=1, padding=0),
-        #     nn.Conv2d(512, 1280, kernel_size=1, stride=1, padding=0),
-        # ])
+        self.student_relation = nn.ModuleList(
+            [
+                ObjectRelation_1(in_channels=128 * 9),
+                ObjectRelation_1(in_channels=256 * 9),
+                ObjectRelation_1(in_channels=512 * 9),
+            ]
+        )
+        self.teacher_relation = nn.ModuleList(
+            [
+                ObjectRelation_1(in_channels=128 * 9),
+                ObjectRelation_1(in_channels=256 * 9),
+                ObjectRelation_1(in_channels=512 * 9),
+            ]
+        )
+        self.relation_adaptation = nn.ModuleList([
+            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(512, 512, kernel_size=1, stride=1, padding=0),
+        ])
 
 
     def forward(self, x, targets=None, t_model = None):
@@ -121,26 +121,26 @@ class YOLOXStudent1(nn.Module):
             loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg = self.head(
                 fpn_outs, targets, x
             )
-            # mixup = targets.shape[2] > 5
-            # if mixup:
-            #     label_cut = targets[..., :5]
-            # else:
-            #     label_cut = targets
-            # nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
-            # batch_gt_bboxes = []
-            # for batch_idx in range(targets.shape[0]):
-            #     num_gt = int(nlabel[batch_idx])
-            #     gt_bboxes_per_image = targets[batch_idx, :num_gt, 1:5]
-            #     # convert from xywh to tlbr
-            #     gt_bboxes_per_image[:, :2] = gt_bboxes_per_image[:, :2] - gt_bboxes_per_image[:, 2:] / 2
-            #     gt_bboxes_per_image[:, 2:] = gt_bboxes_per_image[:, :2] + gt_bboxes_per_image[:, 2:]
-            #     # Normalize for all value > 0
-            #     gt_bboxes_per_image = torch.clamp(gt_bboxes_per_image, min=0)
-            #     batch_gt_bboxes.append(gt_bboxes_per_image)
+            mixup = targets.shape[2] > 5
+            if mixup:
+                label_cut = targets[..., :5]
+            else:
+                label_cut = targets
+            nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
+            batch_gt_bboxes = []
+            for batch_idx in range(targets.shape[0]):
+                num_gt = int(nlabel[batch_idx])
+                gt_bboxes_per_image = targets[batch_idx, :num_gt, 1:5]
+                # convert from xywh to tlbr
+                gt_bboxes_per_image[:, :2] = gt_bboxes_per_image[:, :2] - gt_bboxes_per_image[:, 2:] / 2
+                gt_bboxes_per_image[:, 2:] = gt_bboxes_per_image[:, :2] + gt_bboxes_per_image[:, 2:]
+                # Normalize for all value > 0
+                gt_bboxes_per_image = torch.clamp(gt_bboxes_per_image, min=0)
+                batch_gt_bboxes.append(gt_bboxes_per_image)
             
             kd_nonlocal_loss = 0
             kd_foreground_loss = 0
-            # kd_relation_loss = 0
+            kd_relation_loss = 0
 
             t_feat = t_model.backbone(x)
 
@@ -148,8 +148,6 @@ class YOLOXStudent1(nn.Module):
                 student_feature = fpn_outs[i]
                 teacher_feature = t_feat[i]
                 teacher_feature = teacher_feature[:, :student_feature.shape[1], :, :]
-                print(student_feature.shape, teacher_feature.shape)
-                exit()
                 # Normalize the feature by min-max
                 # student_feature = (student_feature - student_feature.min()) / (student_feature.max() - student_feature.min())
                 # teacher_feature = (teacher_feature - teacher_feature.min()) / (teacher_feature.max() - teacher_feature.min())
@@ -160,20 +158,20 @@ class YOLOXStudent1(nn.Module):
                 kd_nonlocal_loss += torch.dist(self.non_local_adaptation[i](s_relation), t_relation, p=2)
                 kd_foreground_loss += torch.dist(self.for_adaptation[i](student_feature), teacher_feature, p=2)
 
-                # s_region=roi_align(student_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=student_feature.shape[-1] / 1440)
-                # t_region=roi_align(teacher_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=teacher_feature.shape[-1] / 1440)
-                # s_object_relation = self.student_relation[i](s_region)
-                # t_object_relation = self.teacher_relation[i](t_region)
-                # kd_relation_loss += torch.dist(self.relation_adaptation[i](s_object_relation), t_object_relation, p=2)
+                s_region=roi_align(student_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=student_feature.shape[-1] / 1440)
+                t_region=roi_align(teacher_feature, boxes=batch_gt_bboxes, output_size=3, spatial_scale=teacher_feature.shape[-1] / 1440)
+                s_object_relation = self.student_relation[i](s_region)
+                t_object_relation = self.teacher_relation[i](t_region)
+                kd_relation_loss += torch.dist(self.relation_adaptation[i](s_object_relation), t_object_relation, p=2)
 
 
             kd_nonlocal_loss *= 0.004
             kd_foreground_loss *= 0.006
-            # kd_relation_loss *= 0.005
+            kd_relation_loss *= 0.005
 
                 
             outputs = {
-                "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss,
+                "total_loss": loss + kd_foreground_loss + kd_nonlocal_loss + kd_relation_loss,
                 "iou_loss": iou_loss,
                 "l1_loss": l1_loss,
                 "conf_loss": conf_loss,
@@ -181,7 +179,7 @@ class YOLOXStudent1(nn.Module):
                 "num_fg": num_fg,
                 "kd_foreground_loss": kd_foreground_loss,
                 "kd_nonlocal_loss": kd_nonlocal_loss,
-                # "kd_relation_loss": kd_relation_loss
+                "kd_relation_loss": kd_relation_loss
             }
         else:
             outputs = self.head(fpn_outs)
