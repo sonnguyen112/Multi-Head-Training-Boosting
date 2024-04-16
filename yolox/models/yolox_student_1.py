@@ -149,8 +149,8 @@ class YOLOXStudent1(nn.Module):
                 teacher_feature = t_feat[i]
                 teacher_feature = teacher_feature[:, :student_feature.shape[1], :, :]
                 # Normalize the feature by min-max
-                student_feature = (student_feature - student_feature.min()) / (student_feature.max() - student_feature.min())
-                teacher_feature = (teacher_feature - teacher_feature.min()) / (teacher_feature.max() - teacher_feature.min())
+                # student_feature = (student_feature - student_feature.min()) / (student_feature.max() - student_feature.min())
+                # teacher_feature = (teacher_feature - teacher_feature.min()) / (teacher_feature.max() - teacher_feature.min())
                 s_relation = self.student_non_local[i](student_feature)
                 t_relation = self.teacher_non_local[i](teacher_feature)
                 # print(s_relation.shape, t_relation.shape)
@@ -165,8 +165,8 @@ class YOLOXStudent1(nn.Module):
                 kd_relation_loss += torch.dist(self.relation_adaptation[i](s_object_relation), t_object_relation, p=2)
 
 
-            kd_nonlocal_loss *= 0.004
-            kd_foreground_loss *= 0.006
+            kd_nonlocal_loss *= 0.0004
+            kd_foreground_loss *= 0.0006
             kd_relation_loss *= 0.005
 
                 
