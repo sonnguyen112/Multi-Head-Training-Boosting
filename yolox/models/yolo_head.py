@@ -33,6 +33,7 @@ class YOLOXHead(nn.Module):
         """
         super().__init__()
 
+        self.width = width
         self.n_anchors = 1
         self.num_classes = num_classes
         self.decode_in_inference = True  # for deploy, set to False

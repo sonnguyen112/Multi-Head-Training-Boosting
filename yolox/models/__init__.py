@@ -10,3 +10,4 @@ from .yolo_pafpn import YOLOPAFPN
 from .yolox import YOLOX
 from .yolox_student import YOLOXStudent
 from .yolox_student_1 import YOLOXStudent1
+from .yolox_dual_head import YOLOXDualHead
