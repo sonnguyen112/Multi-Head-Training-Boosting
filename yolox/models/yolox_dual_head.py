@@ -64,6 +64,11 @@ class YOLOXDualHead(nn.Module):
                 "mini_num_fg": mini_num_fg,
             }
         else:
-            outputs = self.head(fpn_outs)
+            # outputs = self.head(fpn_outs)
+            reduced_fpn_outs = list(fpn_outs)
+            for i in range(len(reduced_fpn_outs)):
+                reduced_fpn_outs[i] = self.reduce_channels[i](reduced_fpn_outs[i])
+            reduced_fpn_outs = tuple(reduced_fpn_outs)
+            outputs = self.mini_head(reduced_fpn_outs)
 
         return outputs
