@@ -77,6 +77,7 @@ class DualHeadExp(BaseExp):
 
         self.model.apply(init_yolo)
         self.model.head.initialize_biases(1e-2)
+        self.model.mini_head.initialize_biases(1e-2)
         return self.model
 
     def get_data_loader(self, batch_size, is_distributed, no_aug=False):

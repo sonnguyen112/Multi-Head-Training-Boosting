@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torchvision
 import torch.nn.functional as F
+import time
 
 __all__ = [
     "filter_box",
@@ -31,6 +32,7 @@ def filter_box(output, scale_range):
 
 
 def postprocess(prediction, num_classes, conf_thre=0.7, nms_thre=0.45):
+    start_time = time.time()
     box_corner = prediction.new(prediction.shape)
     box_corner[:, :, 0] = prediction[:, :, 0] - prediction[:, :, 2] / 2
     box_corner[:, :, 1] = prediction[:, :, 1] - prediction[:, :, 3] / 2
@@ -66,7 +68,7 @@ def postprocess(prediction, num_classes, conf_thre=0.7, nms_thre=0.45):
             output[i] = detections
         else:
             output[i] = torch.cat((output[i], detections))
-
+    print("Postprocess time: ", time.time() - start_time)
     return output
 
 
