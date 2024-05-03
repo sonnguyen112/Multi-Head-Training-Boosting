@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 
-from yolox.exp import StudentExp as MyExp
+from yolox.exp import DualHeadExp as MyExp
 from yolox.data import get_yolox_datadir
 
 class Exp(MyExp):
