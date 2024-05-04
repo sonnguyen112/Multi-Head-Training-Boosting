@@ -39,14 +39,14 @@ class YOLOXStudent(nn.Module):
 
         if self.training:
             assert targets is not None
-            loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg = self.head(
+            (loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg), cls_outputs, reg_outputs, obj_outputs = self.head.kf_forward(
                 fpn_outs, targets, x
             )        
 
-            t_fpn_outs = t_model.backbone(x)
-
-            cls_outputs, reg_outputs, obj_outputs = self.head.kf_forward(fpn_outs)
-            t_cls_outputs, t_reg_outputs, t_obj_outputs = t_model.head.kf_forward(t_fpn_outs)
+            with torch.no_grad():
+                t_fpn_outs = t_model.backbone(x)
+                _, t_cls_outputs, t_reg_outputs, t_obj_outputs = t_model.head.kf_forward(t_fpn_outs)
+            
             # print(cls_outputs[0].shape, t_cls_outputs[0].shape)
             # print(reg_outputs[0].shape, t_reg_outputs[0].shape)
             # print(obj_outputs[0].shape, t_obj_outputs[0].shape)
