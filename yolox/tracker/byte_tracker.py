@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from .kalman_filter import KalmanFilter
 from yolox.tracker import matching
 from .basetrack import BaseTrack, TrackState
+import time
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
@@ -255,7 +256,9 @@ class BYTETracker(object):
         # print(dists.shape)
         if not self.args.mot20:
             dists = matching.fuse_score(dists, detections)
+        start_time = time.time()
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=self.args.match_thresh) # thesis
+        print('assignment time : ', time.time() - start_time)
 
         for itracked, idet in matches:
             track = strack_pool[itracked]
