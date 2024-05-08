@@ -26,11 +26,23 @@ class YOLOXStudent(nn.Module):
         self.backbone = backbone
         self.head = head
 
-        # self.adaptation = nn.ModuleList([
-        #     nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
-        #     nn.Conv2d(4, 4, kernel_size=1, stride=1, padding=0),
-        #     nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
-        # ])
+        self.cls_adaptation = nn.ModuleList([
+            nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
+        ])
+
+        self.reg_adaptation = nn.ModuleList([
+            nn.Conv2d(4, 4, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(4, 4, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(4, 4, kernel_size=1, stride=1, padding=0),
+        ])
+
+        self.obj_adaptation = nn.ModuleList([
+            nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(1, 1, kernel_size=1, stride=1, padding=0),
+        ])
 
 
     def forward(self, x, targets=None, t_model = None):
@@ -56,9 +68,9 @@ class YOLOXStudent(nn.Module):
             obj_kd_loss = 0
 
             for i in range(3):
-               cls_kd_loss += torch.dist(cls_outputs[i], t_cls_outputs[i], 2)
-               reg_kd_loss += torch.dist(reg_outputs[i], t_reg_outputs[i], 2)
-               obj_kd_loss += torch.dist(obj_outputs[i], t_obj_outputs[i], 2)
+               cls_kd_loss += torch.dist(self.cls_adaptation[i](cls_outputs[i]), t_cls_outputs[i], 2)
+               reg_kd_loss += torch.dist(self.reg_adaptation[i](reg_outputs[i]), t_reg_outputs[i], 2)
+               obj_kd_loss += torch.dist(self.obj_adaptation[i](obj_outputs[i]), t_obj_outputs[i], 2)
 
             outputs = {
                 "total_loss": loss + cls_kd_loss + reg_kd_loss + obj_kd_loss,
