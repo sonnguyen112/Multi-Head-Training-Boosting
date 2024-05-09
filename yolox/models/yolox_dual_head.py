@@ -16,7 +16,7 @@ class YOLOXDualHead(nn.Module):
     and detection results during test.
     """
 
-    def __init__(self, backbone=None, head=None):
+    def __init__(self, backbone=None, head=None, extra_head=None):
         super().__init__()
         if backbone is None:
             backbone = YOLOPAFPN()
@@ -25,11 +25,12 @@ class YOLOXDualHead(nn.Module):
 
         self.backbone = backbone
         self.head = head
-        # self.reduce_channels = nn.Sequential(
-        #     nn.Conv2d(int(256 * self.head.width), 1, kernel_size=1),
-        #     nn.Conv2d(int(512 * self.head.width), 1, kernel_size=1),
-        #     nn.Conv2d(int(1024 * self.head.width), 1, kernel_size=1),
-        # )
+        self.extra_head = extra_head
+        self.up_channels = nn.Sequential(
+            nn.Conv2d(int(256 * self.head.width), int(256 * self.head.width * 2), kernel_size=1),
+            nn.Conv2d(int(512 * self.head.width), int(512 * self.head.width * 2), kernel_size=1),
+            nn.Conv2d(int(1024 * self.head.width), int(1024 * self.head.width * 2), kernel_size=1),
+        )
         # self.up_sample = nn.Sequential(
         #     nn.Upsample(scale_factor=8, mode="bilinear", align_corners=False),
         #     nn.Upsample(scale_factor=16, mode="bilinear", align_corners=False),
@@ -51,12 +52,11 @@ class YOLOXDualHead(nn.Module):
             #     fpn_outs_1[i] = self.up_sample[i](fpn_outs_1[i])
             #     fpn_outs_1[i] = self.reduce_channels[i](fpn_outs_1[i])
             # extra_input = torch.cat(fpn_outs_1, dim=1) + x
-            extra_fpn_outs = self.backbone(x)
-            extra_fpn_outs = list(extra_fpn_outs)
+            extra_fpn_outs = list(fpn_outs)
             for i in range(len(extra_fpn_outs)):
-                extra_fpn_outs[i] = extra_fpn_outs[i] + fpn_outs[i]
+                extra_fpn_outs[i] = self.up_channels[i](extra_fpn_outs[i])
             extra_fpn_outs = tuple(extra_fpn_outs)
-            extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.head(
+            extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_head(
                 extra_fpn_outs, targets, x
             )
             outputs = {
