@@ -55,6 +55,7 @@ class YOLOXDualHead(nn.Module):
             extra_fpn_outs = list(extra_fpn_outs)
             for i in range(len(extra_fpn_outs)):
                 extra_fpn_outs[i] += fpn_outs[i]
+            extra_fpn_outs = tuple(extra_fpn_outs)
             extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.head(
                 extra_fpn_outs, targets, x
             )
