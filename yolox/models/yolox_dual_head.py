@@ -16,7 +16,7 @@ class YOLOXDualHead(nn.Module):
     and detection results during test.
     """
 
-    def __init__(self, backbone=None, head=None):
+    def __init__(self, backbone=None, head=None, extra_backbone=None, extra_head=None):
         super().__init__()
         if backbone is None:
             backbone = YOLOPAFPN()
@@ -24,9 +24,9 @@ class YOLOXDualHead(nn.Module):
             head = YOLOXHead(80)
 
         self.backbone = backbone
-        self.extra_backbone = backbone
         self.head = head
-        self.extra_head = head
+        self.extra_backbone = extra_backbone
+        self.extra_head = extra_head
         self.reduce_channels = nn.Sequential(
             nn.Conv2d(int(256 * self.head.width), 1, kernel_size=1),
             nn.Conv2d(int(512 * self.head.width), 1, kernel_size=1),
