@@ -16,7 +16,7 @@ class YOLOXDualHead(nn.Module):
     and detection results during test.
     """
 
-    def __init__(self, backbone=None, head=None, extra_backbone=None, extra_head=None):
+    def __init__(self, backbone=None, head=None):
         super().__init__()
         if backbone is None:
             backbone = YOLOPAFPN()
@@ -25,8 +25,6 @@ class YOLOXDualHead(nn.Module):
 
         self.backbone = backbone
         self.head = head
-        self.extra_backbone = extra_backbone
-        self.extra_head = extra_head
         self.reduce_channels = nn.Sequential(
             nn.Conv2d(int(256 * self.head.width), 1, kernel_size=1),
             nn.Conv2d(int(512 * self.head.width), 1, kernel_size=1),
@@ -53,8 +51,8 @@ class YOLOXDualHead(nn.Module):
                 fpn_outs_1[i] = self.up_sample[i](fpn_outs_1[i])
                 fpn_outs_1[i] = self.reduce_channels[i](fpn_outs_1[i])
             extra_input = torch.cat(fpn_outs_1, dim=1) + x
-            extra_fpn_outs = self.extra_backbone(extra_input)
-            extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_head(
+            extra_fpn_outs = self.backbone(extra_input)
+            extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.head(
                 extra_fpn_outs, targets, x
             )
             outputs = {
