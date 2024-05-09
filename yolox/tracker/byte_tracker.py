@@ -199,7 +199,6 @@ class BYTETracker(object):
         self.kalman_filter = KalmanFilter()
 
     def update(self, output_results, img_info, img_size):
-        start_time = time.time()
         #output_result is a matrix with row is [position1, position2, width, height, confidence object score, class score
         self.frame_id += 1
         activated_starcks = []
@@ -336,7 +335,6 @@ class BYTETracker(object):
         # get scores of lost tracks
         output_stracks = [track for track in self.tracked_stracks if track.is_activated]
 
-        print("Update time", time.time() - start_time)
         return output_stracks
 
 

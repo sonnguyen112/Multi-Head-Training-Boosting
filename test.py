@@ -1,31 +1,24 @@
-import time
-import torch
+from PIL import Image
 
+# Open an image file
+with Image.open('/home/sonnguyen112/Pictures/6045d8bd0572a82cf163.jpg') as img:
+    # Calculate target size maintaining aspect ratio 13:18
+    width = img.size[0]
+    height = img.size[1]
+    aspect_ratio = width / height
 
-class A:
+    target_aspect_ratio = 13 / 18
+    if aspect_ratio > target_aspect_ratio:
+        # If image is wider than the target aspect ratio, constrain width and adjust height
+        target_width = width
+        target_height = round(target_width / target_aspect_ratio)
+    else:
+        # If image is taller than the target aspect ratio, constrain height and adjust width
+        target_height = height
+        target_width = round(target_height * target_aspect_ratio)
 
+    # Resize the image
+    img_resized = img.resize((target_width, target_height))
 
-    def main(self):
-        try:
-            start_time = time.time()
-            grids = torch.empty(1, 13566, 2)
-           
-            for i in range(3):
-                if i == 0:
-                    grid = torch.full((1, 10336, 2), 0)
-                    grids[:, :10336, :] = grid
-                elif i == 1:
-                    grid = torch.full((1, 2584, 2), 1)
-                    grids[:, 10336:10336 + 2584, :] = grid
-                else:
-                    grid = torch.full((1, 646, 2), 2)
-                    grids[:, 10336 + 2584:, :] = grid
-                
-            print("--- %s seconds ---" % (time.time() - start_time))
-        except Exception as e:
-            print(e)
-
-a = A()
-for i in range(10):
-    # time.sleep(0.5)
-    a.main()
+# Save the resized image
+img_resized.save('/home/sonnguyen112/Desktop/output.png')

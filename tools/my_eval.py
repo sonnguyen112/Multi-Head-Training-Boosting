@@ -189,7 +189,7 @@ def eval_bytetrack_with_kalman_single_video(video, current_time, predictor):
             #     if avg_similarty < 0.9:
             #         outputs, img_info = predictor.inference(frame, timer)
             det_end = time.perf_counter()
-            print("Detection: ", det_end - det_start)
+            # print("Detection: ", det_end - det_start)
             if outputs[0] is not None:
                 online_targets = tracker.update(
                     outputs[0], [img_info['height'], img_info['width']], exp.test_size)
@@ -360,7 +360,7 @@ def eval_bytetrack_with_kalman_2_single_video(video, current_time, predictor):
             #     if avg_similarty < 0.9:
             #         outputs, img_info = predictor.inference(frame, timer)
             det_end = time.perf_counter()
-            print("Detection: ", det_end - det_start)
+            # print("Detection: ", det_end - det_start)
             if outputs[0] is not None:
                 # ass_start = time.perf_counter()
                 online_targets = tracker.update(
@@ -629,9 +629,9 @@ def eval_bytetrack_with_template_single_video(video, current_time, predictor):
             else:
                 timer.toc()
                 is_use_yolo = False
-            ch = cv2.waitKey(1)
-            if ch == 27 or ch == ord("q") or ch == ord("Q"):
-                break
+            # ch = cv2.waitKey(1)
+            # if ch == 27 or ch == ord("q") or ch == ord("Q"):
+            #     break
         else:
             break
         frame_id += 1
