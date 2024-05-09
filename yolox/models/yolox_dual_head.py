@@ -48,11 +48,11 @@ class YOLOXDualHead(nn.Module):
                 fpn_outs, targets, x
             )
 
-            fpn_outs = list(fpn_outs)
-            for i in range(len(fpn_outs)):
-                fpn_outs[i] = self.up_sample[i](fpn_outs[i])
-                fpn_outs[i] = self.reduce_channels[i](fpn_outs[i])
-            extra_input = torch.cat(fpn_outs, dim=1)
+            fpn_outs_1 = list(fpn_outs)
+            for i in range(len(fpn_outs_1)):
+                fpn_outs_1[i] = self.up_sample[i](fpn_outs_1[i])
+                fpn_outs_1[i] = self.reduce_channels[i](fpn_outs_1[i])
+            extra_input = torch.cat(fpn_outs_1, dim=1)
             extra_fpn_outs = self.extra_backbone(extra_input)
             extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_head(
                 extra_fpn_outs, targets, x
