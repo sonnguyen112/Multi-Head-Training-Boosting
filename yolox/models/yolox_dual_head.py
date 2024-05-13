@@ -78,12 +78,12 @@ class YOLOXDualHead(nn.Module):
                 "extra_num_fg": extra_num_fg,
             }
         else:
-            # outputs = self.head(fpn_outs)
+            outputs = self.head(fpn_outs)
 
-            extra_fpn_outs = list(fpn_outs)
-            for i in range(len(extra_fpn_outs)):
-                extra_fpn_outs[i] = self.up_channels[i](extra_fpn_outs[i])
-            extra_fpn_outs = tuple(extra_fpn_outs)
-            outputs = self.extra_head(extra_fpn_outs)
+            # extra_fpn_outs = list(fpn_outs)
+            # for i in range(len(extra_fpn_outs)):
+            #     extra_fpn_outs[i] = self.up_channels[i](extra_fpn_outs[i])
+            # extra_fpn_outs = tuple(extra_fpn_outs)
+            # outputs = self.extra_head(extra_fpn_outs)
 
         return outputs
