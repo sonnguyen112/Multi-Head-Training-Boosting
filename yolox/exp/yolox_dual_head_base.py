@@ -72,7 +72,8 @@ class DualHeadExp(BaseExp):
             in_channels = [256, 512, 1024]
             backbone = YOLOPAFPN(self.depth, self.width, in_channels=in_channels)
             head = YOLOXHead(self.num_classes, self.width, in_channels=in_channels)
-            extra_head = YOLOXHead(self.num_classes, self.width * 2, in_channels=in_channels)
+            # extra_head = YOLOXHead(self.num_classes, self.width * 2, in_channels=in_channels)
+            extra_head = YOLOXHead(self.num_classes, self.width * 2.5, in_channels=in_channels)
             self.model = YOLOXDualHead(backbone, head, extra_head)
 
         self.model.apply(init_yolo)

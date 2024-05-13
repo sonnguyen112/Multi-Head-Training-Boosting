@@ -22,20 +22,23 @@ class YOLOXDualHead(nn.Module):
             backbone = YOLOPAFPN()
         if head is None:
             head = YOLOXHead(80)
+        if extra_head is None:
+            extra_head = YOLOXHead(80)
 
         self.backbone = backbone
         self.head = head
         self.extra_head = extra_head
-        self.up_channels = nn.Sequential(
-            nn.Conv2d(int(256 * self.head.width), int(256 * self.head.width * 2), kernel_size=1),
-            nn.Conv2d(int(512 * self.head.width), int(512 * self.head.width * 2), kernel_size=1),
-            nn.Conv2d(int(1024 * self.head.width), int(1024 * self.head.width * 2), kernel_size=1),
-        )
-        # self.up_sample = nn.Sequential(
-        #     nn.Upsample(scale_factor=8, mode="bilinear", align_corners=False),
-        #     nn.Upsample(scale_factor=16, mode="bilinear", align_corners=False),
-        #     nn.Upsample(scale_factor=32, mode="bilinear", align_corners=False),
+        # self.up_channels = nn.Sequential(
+        #     nn.Conv2d(int(256 * self.head.width), int(256 * self.head.width * 2), kernel_size=1),
+        #     nn.Conv2d(int(512 * self.head.width), int(512 * self.head.width * 2), kernel_size=1),
+        #     nn.Conv2d(int(1024 * self.head.width), int(1024 * self.head.width * 2), kernel_size=1),
         # )
+        self.up_channels = nn.Sequential(
+            nn.Conv2d(int(256 * self.head.width), int(256 * self.extra_head.width), kernel_size=1),
+            nn.Conv2d(int(512 * self.head.width), int(512 * self.extra_head.width), kernel_size=1),
+            nn.Conv2d(int(1024 * self.head.width), int(1024 * self.extra_head.width), kernel_size=1),
+        )
+        
 
     def forward(self, x, targets=None):
         # fpn output content features of [dark3, dark4, dark5]
@@ -61,6 +64,7 @@ class YOLOXDualHead(nn.Module):
             )
             outputs = {
                 "total_loss": loss + extra_loss,
+                "loss":loss,
                 "iou_loss": iou_loss,
                 "l1_loss": l1_loss,
                 "conf_loss": conf_loss,
@@ -74,11 +78,12 @@ class YOLOXDualHead(nn.Module):
                 "extra_num_fg": extra_num_fg,
             }
         else:
-            outputs = self.head(fpn_outs)
-            # reduced_fpn_outs = list(fpn_outs)
-            # for i in range(len(reduced_fpn_outs)):
-            #     reduced_fpn_outs[i] = self.reduce_channels[i](reduced_fpn_outs[i])
-            # reduced_fpn_outs = tuple(reduced_fpn_outs)
-            # outputs = self.mini_head(reduced_fpn_outs)
+            # outputs = self.head(fpn_outs)
+
+            extra_fpn_outs = list(fpn_outs)
+            for i in range(len(extra_fpn_outs)):
+                extra_fpn_outs[i] = self.up_channels[i](extra_fpn_outs[i])
+            extra_fpn_outs = tuple(extra_fpn_outs)
+            outputs = self.extra_head(extra_fpn_outs)
 
         return outputs
