@@ -8,3 +8,4 @@ from .yolox_base import Exp
 from .yolox_student_base import StudentExp
 from .yolox_student_base_1 import StudentExp1
 from .yolox_dual_head_base import DualHeadExp
+from .yolox_triple_head_base import TripleHeadExp
