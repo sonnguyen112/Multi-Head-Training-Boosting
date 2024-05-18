@@ -115,9 +115,12 @@ def dti(txt_path, save_path, n_min=25, n_dti=20):
 
 
 if __name__ == '__main__':
-    data_root = '/opt/tiger/demo/ByteTrack/datasets/mot/test'
-    txt_path = '/opt/tiger/demo/ByteTrack/YOLOX_outputs/yolox_x_mix_det/track_results'
-    save_path = '/opt/tiger/demo/ByteTrack/YOLOX_outputs/yolox_x_mix_det/track_results_dti'
+    # data_root = '/opt/tiger/demo/ByteTrack/datasets/mot/test'
+    # txt_path = '/opt/tiger/demo/ByteTrack/YOLOX_outputs/yolox_x_mix_det/track_results'
+    # save_path = '/opt/tiger/demo/ByteTrack/YOLOX_outputs/yolox_x_mix_det/track_results_dti'
+    data_root = '/home/sonnguyen112/Data/HCMUS/Thesis/ByteTrack/datasets/mot/test'
+    txt_path = '/home/sonnguyen112/Data/HCMUS/Thesis/ByteTrack/YOLOX_outputs/yolox_s_with_head_l_head_x_mix_det/track_results'
+    save_path = '/home/sonnguyen112/Data/HCMUS/Thesis/ByteTrack/YOLOX_outputs/yolox_s_with_head_l_head_x_mix_det/track_results_dti'
     
     mkdir_if_missing(save_path)
     dti(txt_path, save_path, n_min=5, n_dti=20)
