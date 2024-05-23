@@ -59,7 +59,7 @@ class YOLOXDualHead(nn.Module):
                 extra_fpn_outs, targets, x
             )
             outputs = {
-                "total_loss": 0.2 * loss + 0.8 * extra_loss,
+                "total_loss": 0.8 * loss + 0.2 * extra_loss,
                 "loss":loss,
                 "iou_loss": iou_loss,
                 "l1_loss": l1_loss,
