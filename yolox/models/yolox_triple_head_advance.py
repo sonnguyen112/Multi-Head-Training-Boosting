@@ -46,7 +46,8 @@ class YOLOXTripleHeadAdvance(nn.Module):
                                                       self.extra_head_1.width), kernel_size=1),
             nn.Conv2d(int(1024 * self.head.width), int(1024 *
                                                        self.extra_head_1.width), kernel_size=1),
-        ),
+        )
+        
         self.up_channels_1_1 = nn.Sequential(
             nn.Conv2d(int(256 *
                           self.extra_head_1.width), int(256 *
