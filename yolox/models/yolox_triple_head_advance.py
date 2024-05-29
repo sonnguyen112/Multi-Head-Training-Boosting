@@ -39,27 +39,25 @@ class YOLOXTripleHeadAdvance(nn.Module):
                       int(1024 * self.extra_head.width), kernel_size=1),
         )
 
-        self.up_channels_1 = [
-            nn.Sequential(
-                nn.Conv2d(int(256 * self.head.width), int(256 *
-                                                          self.extra_head_1.width), kernel_size=1),
-                nn.Conv2d(int(512 * self.head.width), int(512 *
-                                                          self.extra_head_1.width), kernel_size=1),
-                nn.Conv2d(int(1024 * self.head.width), int(1024 *
-                                                           self.extra_head_1.width), kernel_size=1),
-            ),
-            nn.Sequential(
-                nn.Conv2d(int(256 *
-                              self.extra_head_1.width), int(256 *
-                                                            self.extra_head_1.width), kernel_size=1),
-                nn.Conv2d(int(512 *
-                              self.extra_head_1.width), int(512 *
-                                                            self.extra_head_1.width), kernel_size=1),
-                nn.Conv2d(int(1024 *
-                              self.extra_head_1.width), int(1024 *
-                                                            self.extra_head_1.width), kernel_size=1),
-            )
-        ]
+        self.up_channels_1_0 = nn.Sequential(
+            nn.Conv2d(int(256 * self.head.width), int(256 *
+                                                      self.extra_head_1.width), kernel_size=1),
+            nn.Conv2d(int(512 * self.head.width), int(512 *
+                                                      self.extra_head_1.width), kernel_size=1),
+            nn.Conv2d(int(1024 * self.head.width), int(1024 *
+                                                       self.extra_head_1.width), kernel_size=1),
+        ),
+        self.up_channels_1_1 = nn.Sequential(
+            nn.Conv2d(int(256 *
+                          self.extra_head_1.width), int(256 *
+                                                        self.extra_head_1.width), kernel_size=1),
+            nn.Conv2d(int(512 *
+                          self.extra_head_1.width), int(512 *
+                                                        self.extra_head_1.width), kernel_size=1),
+            nn.Conv2d(int(1024 *
+                          self.extra_head_1.width), int(1024 *
+                                                        self.extra_head_1.width), kernel_size=1),
+        )
 
     def forward(self, x, targets=None):
         # fpn output content features of [dark3, dark4, dark5]
@@ -81,8 +79,8 @@ class YOLOXTripleHeadAdvance(nn.Module):
 
             extra_fpn_outs_1 = list(fpn_outs)
             for i in range(len(extra_fpn_outs_1)):
-                extra_fpn_outs_1[i] = self.up_channels_1[1][i](
-                    self.up_channels_1[0][i](extra_fpn_outs_1[i]))
+                extra_fpn_outs_1[i] = self.up_channels_1_1[i](
+                    self.up_channels_1_0[i](extra_fpn_outs_1[i]))
             extra_fpn_outs_1 = tuple(extra_fpn_outs_1)
             extra_loss_1, extra_iou_loss_1, extra_conf_loss_1, extra_cls_loss_1, extra_l1_loss_1, extra_num_fg_1 = self.extra_head_1(
                 extra_fpn_outs_1, targets, x
