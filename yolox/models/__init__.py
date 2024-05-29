@@ -13,3 +13,4 @@ from .yolox_student_1 import YOLOXStudent1
 from .yolox_dual_head import YOLOXDualHead
 from .yolox_triple_head import YOLOXTripleHead
 from .yolox_five_head import YOLOXFiveHead
+from .yolox_triple_head_advance import YOLOXTripleHeadAdvance
