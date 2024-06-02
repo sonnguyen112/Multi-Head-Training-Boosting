@@ -49,7 +49,8 @@ class DetectionTrainer(BaseTrainer):
             dataset = self.build_dataset(dataset_path, mode, batch_size)
         shuffle = mode == "train"
         if getattr(dataset, "rect", False) and shuffle:
-            LOGGER.warning("WARNING ⚠️ 'rect=True' is incompatible with DataLoader shuffle, setting shuffle=False")
+            LOGGER.warning(
+                "WARNING ⚠️ 'rect=True' is incompatible with DataLoader shuffle, setting shuffle=False")
             shuffle = False
         workers = self.args.workers if mode == "train" else self.args.workers * 2
         return build_dataloader(dataset, batch_size, workers, shuffle, rank)  # return dataloader
@@ -69,7 +70,8 @@ class DetectionTrainer(BaseTrainer):
                 ns = [
                     math.ceil(x * sf / self.stride) * self.stride for x in imgs.shape[2:]
                 ]  # new shape (stretched to gs-multiple)
-                imgs = nn.functional.interpolate(imgs, size=ns, mode="bilinear", align_corners=False)
+                imgs = nn.functional.interpolate(
+                    imgs, size=ns, mode="bilinear", align_corners=False)
             batch["img"] = imgs
         return batch
 
@@ -105,7 +107,8 @@ class DetectionTrainer(BaseTrainer):
         """
         keys = [f"{prefix}/{x}" for x in self.loss_names]
         if loss_items is not None:
-            loss_items = [round(float(x), 5) for x in loss_items]  # convert tensors to 5 decimal place floats
+            # convert tensors to 5 decimal place floats
+            loss_items = [round(float(x), 5) for x in loss_items]
             return dict(zip(keys, loss_items))
         else:
             return keys
@@ -140,7 +143,9 @@ class DetectionTrainer(BaseTrainer):
         """Create a labeled training plot of the YOLO model."""
         boxes = np.concatenate([lb["bboxes"] for lb in self.train_loader.dataset.labels], 0)
         cls = np.concatenate([lb["cls"] for lb in self.train_loader.dataset.labels], 0)
-        plot_labels(boxes, cls.squeeze(), names=self.data["names"], save_dir=self.save_dir, on_plot=self.on_plot)
+        plot_labels(boxes, cls.squeeze(),
+                    names=self.data["names"], save_dir=self.save_dir, on_plot=self.on_plot)
+
 
 class DetectionTrainerCustom(DetectionTrainer):
     """Customized version of DetectionModel class."""
@@ -151,10 +156,10 @@ class DetectionTrainerCustom(DetectionTrainer):
         if weights:
             model.load(weights)
         return model
-    
+
     def get_validator(self):
         """Returns a DetectionValidator for YOLO model validation."""
         self.loss_names = "box_loss", "cls_loss", "dfl_loss"
-        return yolo.detect.DetectionValidator(
+        return yolo.detect.DetectionValidatorCustom(
             self.test_loader, save_dir=self.save_dir, args=copy(self.args), _callbacks=self.callbacks
         )
