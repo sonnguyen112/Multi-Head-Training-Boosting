@@ -492,6 +492,7 @@ class DetectionModelCustom(BaseModel):
         """
         if isinstance(x, dict):  # for cases of training and validating while training.
             return self.loss(x, *args, **kwargs)
+        is_training = kwargs.get("is_training", True)
         if is_training:
             return self._predict_once(x, *args, **kwargs)
         return self.predict(x, *args, **kwargs)[0]
