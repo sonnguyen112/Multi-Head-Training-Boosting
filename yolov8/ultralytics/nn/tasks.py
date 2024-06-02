@@ -470,6 +470,7 @@ class DetectionModelCustom(BaseModel):
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
             if m.i in {22, 26, 33, 40, 47}:
+                print(type(x[0]))
                 outputs.append([x[0].clone(), x[1].clone(), x[2].clone()])
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
