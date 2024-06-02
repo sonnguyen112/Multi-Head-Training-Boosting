@@ -384,7 +384,7 @@ class DetectionModelCustom(BaseModel):
             self.info()
             LOGGER.info("")
 
-    def _predict_augment(self, x):
+    def _predict_augment(self, x, is_training = False):
         """Perform augmentations on input image x and return augmented inference and train outputs."""
         img_size = x.shape[-2:]  # height, width
         s = [1, 0.83, 0.67]  # scales
@@ -392,7 +392,7 @@ class DetectionModelCustom(BaseModel):
         y = []  # outputs
         for si, fi in zip(s, f):
             xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
-            yi = super().predict(xi)[0]  # forward
+            yi = super().predict(xi, is_training = is_training)[0]  # forward
             yi = self._descale_pred(yi, fi, si, img_size)
             y.append(yi)
         y = self._clip_augmented(y)  # clip augmented tails
@@ -446,9 +446,9 @@ class DetectionModelCustom(BaseModel):
             total_loss = tuple(total_loss)
             return total_loss
         else:
-            return self.criterion(preds[0], batch)
+            return self.criterion(preds, batch)
         
-    def _predict_once(self, x, profile=False, visualize=False, embed=None):
+    def _predict_once(self, x, profile=False, visualize=False, embed=None, is_training=True):
         """
         Perform a forward pass through the network.
 
@@ -468,11 +468,10 @@ class DetectionModelCustom(BaseModel):
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
-            print(type(x))
             x = m(x)  # run
-            if m.i in {22, 26, 33, 40, 47}:
-                print(type(x[0]))
-                outputs.append([x[0].clone(), x[1].clone(), x[2].clone()])
+            if is_training:
+                if m.i in {22, 26, 33, 40, 47}:
+                    outputs.append([x[0].clone(), x[1].clone(), x[2].clone()])
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
@@ -480,7 +479,27 @@ class DetectionModelCustom(BaseModel):
                 embeddings.append(nn.functional.adaptive_avg_pool2d(x, (1, 1)).squeeze(-1).squeeze(-1))  # flatten
                 if m.i == max(embed):
                     return torch.unbind(torch.cat(embeddings, 1), dim=0)
-        return outputs
+        if is_training:
+            return outputs
+        return x
+    
+    def predict(self, x, profile=False, visualize=False, augment=False, embed=None, is_training=True):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+            augment (bool): Augment image during prediction, defaults to False.
+            embed (list, optional): A list of feature vectors/embeddings to return.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        if augment:
+            return self._predict_augment(x, is_training=is_training)
+        return self._predict_once(x, profile, visualize, embed, is_training = is_training)
     
     def forward(self, x, *args, **kwargs):
         """
@@ -494,11 +513,7 @@ class DetectionModelCustom(BaseModel):
         """
         if isinstance(x, dict):  # for cases of training and validating while training.
             return self.loss(x, *args, **kwargs)
-        is_training = kwargs.get("is_training", True)
-        if is_training:
-            return self._predict_once(x, *args, **kwargs)
-        del kwargs["is_training"]
-        return self.predict(x, *args, **kwargs)[0]
+        return self.predict(x, *args, **kwargs)
 
 
 class OBBModel(DetectionModel):
