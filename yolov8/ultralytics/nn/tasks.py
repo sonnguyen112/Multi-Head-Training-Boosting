@@ -461,7 +461,7 @@ class DetectionModelCustom(BaseModel):
         Returns:
             (torch.Tensor): The last output of the model.
         """
-        # print("Run Custom Predict")
+        print("Run Custom Predict")
         y, dt, embeddings, outputs = [], [], [], []  # outputs
         for m in self.model:
             if m.f != -1:  # if not from previous layer
@@ -480,37 +480,20 @@ class DetectionModelCustom(BaseModel):
                     return torch.unbind(torch.cat(embeddings, 1), dim=0)
         return outputs
     
-    def predict(self, x, profile=False, visualize=False, augment=False, embed=None, is_training=True):
+    def forward(self, x, *args, **kwargs):
         """
-        Perform a forward pass through the network.
+        Forward pass of the model on a single scale. Wrapper for `_forward_once` method.
 
         Args:
-            x (torch.Tensor): The input tensor to the model.
-            profile (bool):  Print the computation time of each layer if True, defaults to False.
-            visualize (bool): Save the feature maps of the model if True, defaults to False.
-            augment (bool): Augment image during prediction, defaults to False.
-            embed (list, optional): A list of feature vectors/embeddings to return.
+            x (torch.Tensor | dict): The input image tensor or a dict including image tensor and gt labels.
 
         Returns:
-            (torch.Tensor): The last output of the model.
+            (torch.Tensor): The output of the network.
         """
-        if augment:
-            return self._predict_augment(x, is_training=is_training)
-        return self._predict_once(x, profile, visualize, embed, is_training = is_training)
-    
-    def _predict_augment(self, x, is_training=True):
-        """Perform augmentations on input image x and return augmented inference and train outputs."""
-        img_size = x.shape[-2:]  # height, width
-        s = [1, 0.83, 0.67]  # scales
-        f = [None, 3, None]  # flips (2-ud, 3-lr)
-        y = []  # outputs
-        for si, fi in zip(s, f):
-            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
-            yi = self.predict(xi, is_training=is_training)[0]  # forward
-            yi = self._descale_pred(yi, fi, si, img_size)
-            y.append(yi)
-        y = self._clip_augmented(y)  # clip augmented tails
-        return torch.cat(y, -1), None  # augmented inference, train
+        print("Run Custom Forward")
+        if isinstance(x, dict):  # for cases of training and validating while training.
+            return self.loss(x, *args, **kwargs)
+        return self.predict(x, *args, **kwargs)[0]
 
 
 class OBBModel(DetectionModel):
