@@ -88,7 +88,7 @@ class BaseModel(nn.Module):
             return self.loss(x, *args, **kwargs)
         return self.predict(x, *args, **kwargs)
 
-    def predict(self, x, profile=False, visualize=False, augment=False, embed=None):
+    def predict(self, x, profile=False, visualize=False, augment=False, embed=None, is_train=False):
         """
         Perform a forward pass through the network.
 
@@ -104,9 +104,9 @@ class BaseModel(nn.Module):
         """
         if augment:
             return self._predict_augment(x)
-        return self._predict_once(x, profile, visualize, embed)
+        return self._predict_once(x, profile, visualize, embed, is_train)
 
-    def _predict_once(self, x, profile=False, visualize=False, embed=None):
+    def _predict_once(self, x, profile=False, visualize=False, embed=None, is_train=False):
         """
         Perform a forward pass through the network.
 
@@ -148,7 +148,10 @@ class BaseModel(nn.Module):
                 if is_origin_out:
                     origin_out = x
                     is_origin_out = False
-        return origin_out, outputs
+        if is_train:
+            return outputs
+        else:
+            return origin_out
 
     def _predict_augment(self, x):
         """Perform augmentations on input image x and return augmented inference."""
@@ -267,7 +270,7 @@ class BaseModel(nn.Module):
         if verbose:
             LOGGER.info(f"Transferred {len(csd)}/{len(self.model.state_dict())} items from pretrained weights")
 
-    def loss(self, batch, preds=None):
+    def loss(self, batch, preds=None, is_train=False):
         """
         Compute loss.
 
@@ -278,14 +281,17 @@ class BaseModel(nn.Module):
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
 
-        preds = self.forward(batch["img"])[1] if preds is None else preds
-        total_loss = list(self.criterion(preds[0], batch))
-        for i in range(1, len(preds)):
-            loss = list(self.criterion(preds[i], batch))
-            total_loss[0] += loss[0]
-            total_loss[1] += loss[1]
-        total_loss = tuple(total_loss)
-        return total_loss
+        preds = self.forward(batch["img"], is_train=True) if preds is None else preds
+        if is_train:
+            total_loss = list(self.criterion(preds[0], batch))
+            for i in range(1, len(preds)):
+                loss = list(self.criterion(preds[i], batch))
+                total_loss[0] += loss[0]
+                total_loss[1] += loss[1]
+            total_loss = tuple(total_loss)
+            return total_loss
+        else:
+            return self.criterion(preds, batch)
 
     def init_criterion(self):
         """Initialize the loss criterion for the BaseModel."""
@@ -314,7 +320,7 @@ class DetectionModel(BaseModel):
         if isinstance(m, Detect):  # includes all Detect subclasses like Segment, Pose, OBB, WorldDetect
             s = 256  # 2x min stride
             m.inplace = self.inplace
-            forward = lambda x: self.forward(x)[0][0] if isinstance(m, (Segment, Pose, OBB)) else self.forward(x)[0]
+            forward = lambda x: self.forward(x)[0] if isinstance(m, (Segment, Pose, OBB)) else self.forward(x)
             m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
             self.stride = m.stride
             m.bias_init()  # only run once
