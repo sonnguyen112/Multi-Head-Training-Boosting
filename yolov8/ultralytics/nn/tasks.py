@@ -124,8 +124,6 @@ class BaseModel(nn.Module):
         # print(x.shape)
         # print("model", self.model) 
         outputs = []
-        origin_out = None
-        is_origin_out = True
         for m in self.model:
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
@@ -145,13 +143,10 @@ class BaseModel(nn.Module):
             #     print(f"{m.i} {m.type} {x[0].shape}, {x[1].shape}, {x[2].shape}")
             if type(m.f) is list and len(m.f) == 3:
                 outputs.append(x)
-                if is_origin_out:
-                    origin_out = [x[0].clone(), x[1].clone(), x[2].clone()]
-                    is_origin_out = False
         if is_train:
             return outputs
         else:
-            return origin_out
+            return outputs[0]
 
     def _predict_augment(self, x, is_train=False):
         """Perform augmentations on input image x and return augmented inference."""
