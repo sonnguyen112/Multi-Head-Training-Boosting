@@ -146,7 +146,7 @@ class BaseModel(nn.Module):
             if type(m.f) is list and len(m.f) == 3:
                 outputs.append(x)
                 if is_origin_out:
-                    origin_out = deepcopy(x)
+                    origin_out = [x[0].clone(), x[1].clone(), x[2].clone()]
                     is_origin_out = False
         if is_train:
             return outputs
