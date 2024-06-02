@@ -468,7 +468,7 @@ class DetectionModelCustom(BaseModel):
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
-            print(x)
+            print(type(x))
             x = m(x)  # run
             if m.i in {22, 26, 33, 40, 47}:
                 print(type(x[0]))
