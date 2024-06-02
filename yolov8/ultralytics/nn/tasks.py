@@ -461,7 +461,7 @@ class DetectionModelCustom(BaseModel):
         Returns:
             (torch.Tensor): The last output of the model.
         """
-        print("Run Custom Predict")
+        # print("Run Custom Predict")
         y, dt, embeddings, outputs = [], [], [], []  # outputs
         for m in self.model:
             if m.f != -1:  # if not from previous layer
