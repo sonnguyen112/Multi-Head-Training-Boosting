@@ -141,8 +141,8 @@ class BaseModel(nn.Module):
             #     print(f"{m.i} {m.type} {x.shape}")
             # except:
             #     print(f"{m.i} {m.type} {x[0].shape}, {x[1].shape}, {x[2].shape}")
-            if type(m.f) is list and len(m.f) == 3:
-                outputs.append(x)
+            if m.i in {22, 26, 33, 40, 47}:
+                outputs.append([x[0].clone(), x[1].clone(), x[2].clone()])
         if is_train:
             return outputs
         else:
