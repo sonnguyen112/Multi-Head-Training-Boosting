@@ -384,7 +384,7 @@ class DetectionModelCustom(BaseModel):
             self.info()
             LOGGER.info("")
 
-    def _predict_augment(self, x, is_training = False):
+    def _predict_augment(self, x, is_training = True):
         """Perform augmentations on input image x and return augmented inference and train outputs."""
         img_size = x.shape[-2:]  # height, width
         s = [1, 0.83, 0.67]  # scales
@@ -392,7 +392,7 @@ class DetectionModelCustom(BaseModel):
         y = []  # outputs
         for si, fi in zip(s, f):
             xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
-            yi = super().predict(xi, is_training = is_training)[0]  # forward
+            yi = self.predict(xi, is_training = is_training)[0]  # forward
             yi = self._descale_pred(yi, fi, si, img_size)
             y.append(yi)
         y = self._clip_augmented(y)  # clip augmented tails
@@ -436,7 +436,7 @@ class DetectionModelCustom(BaseModel):
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
 
-        preds = self.forward(batch["img"]) if preds is None else preds # Return a list of predict
+        preds = self.forward(batch["img"]) if preds is None else preds
         if is_training:
             total_loss = list(self.criterion(preds[0], batch))
             for i in range(1, len(preds)):
