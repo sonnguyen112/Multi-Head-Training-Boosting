@@ -435,7 +435,7 @@ class DetectionModelCustom(BaseModel):
         # print("Run Custom Loss")
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
-        print("Is training in loss", is_training)
+        # print("Is training in loss", is_training)
         preds = self.forward(batch["img"]) if preds is None else preds
         if is_training:
             total_loss = list(self.criterion(preds[0], batch))
@@ -464,6 +464,8 @@ class DetectionModelCustom(BaseModel):
         # print("Run Custom Predict")
         y, dt, embeddings, outputs = [], [], [], []  # outputs
         for m in self.model:
+            if m.i > 22 and is_training == False:
+                break
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -1136,7 +1138,7 @@ def parse_model_custom(d, ch, verbose=True):  # model_dict, input_channels(3)
     ch = [ch]
     layers, save, c2 = [], [], ch[-1]  # layers, savelist, ch out
     extra_depth, extra_width, extra_max_channels = d["extra_scale"]
-    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"]):  # from, number, module, args
+    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"] + d["extra_head"] + d["extra_head_2"] + d["extra_head_3"] + d["extra_head_4"]):  # from, number, module, args
         if i > 22:
             depth, width, max_channels = extra_depth, extra_width, extra_max_channels
         m = getattr(torch.nn, m[3:]) if "nn." in m else globals()[m]  # get module
