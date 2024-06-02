@@ -103,7 +103,7 @@ class BaseModel(nn.Module):
             (torch.Tensor): The last output of the model.
         """
         if augment:
-            return self._predict_augment(x)
+            return self._predict_augment(x, is_train=is_train)
         return self._predict_once(x, profile, visualize, embed, is_train)
 
     def _predict_once(self, x, profile=False, visualize=False, embed=None, is_train=False):
@@ -153,13 +153,13 @@ class BaseModel(nn.Module):
         else:
             return origin_out
 
-    def _predict_augment(self, x):
+    def _predict_augment(self, x, is_train=False):
         """Perform augmentations on input image x and return augmented inference."""
         LOGGER.warning(
             f"WARNING ⚠️ {self.__class__.__name__} does not support augmented inference yet. "
             f"Reverting to single-scale inference instead."
         )
-        return self._predict_once(x)
+        return self._predict_once(x, is_train=is_train)
 
     def _profile_one_layer(self, m, x, dt):
         """
