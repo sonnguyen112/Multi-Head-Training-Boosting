@@ -147,8 +147,10 @@ class Model(nn.Module):
 
         # Load or create new YOLO model
         if Path(model).suffix in {".yaml", ".yml"}:
+            print("Create new model from YAML")
             self._new(model, task=task, verbose=verbose)
         else:
+            print("Load model from checkpoint")
             self._load(model, task=task)
 
     def __call__(

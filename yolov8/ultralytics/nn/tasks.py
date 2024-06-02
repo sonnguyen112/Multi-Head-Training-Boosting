@@ -120,6 +120,9 @@ class BaseModel(nn.Module):
             (torch.Tensor): The last output of the model.
         """
         y, dt, embeddings = [], [], []  # outputs
+        print("Start backbone")
+        print(x.shape)
+        # print("model", self.model)
         for m in self.model:
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
@@ -133,6 +136,10 @@ class BaseModel(nn.Module):
                 embeddings.append(nn.functional.adaptive_avg_pool2d(x, (1, 1)).squeeze(-1).squeeze(-1))  # flatten
                 if m.i == max(embed):
                     return torch.unbind(torch.cat(embeddings, 1), dim=0)
+            try:
+                print(f"{m.i} {m.type} {x.shape}")
+            except:
+                print(f"{m.i} {m.type} {x[0].shape}, {x[1].shape}, {x[2].shape}")
         return x
 
     def _predict_augment(self, x):
