@@ -495,6 +495,7 @@ class DetectionModelCustom(BaseModel):
         is_training = kwargs.get("is_training", True)
         if is_training:
             return self._predict_once(x, *args, **kwargs)
+        del kwargs["is_training"]
         return self.predict(x, *args, **kwargs)[0]
 
 
