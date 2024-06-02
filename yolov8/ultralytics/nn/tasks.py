@@ -874,7 +874,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
     ch = [ch]
     layers, save, c2 = [], [], ch[-1]  # layers, savelist, ch out
     extra_depth, extra_width, extra_max_channels = d["extra_scale"]
-    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"] + d["extra_head"] + d["extra_head_2"] + d["extra_head_3"] + d["extra_head_4"]):  # from, number, module, args
+    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"]):  # from, number, module, args
         if i > 22:
             depth, width, max_channels = extra_depth, extra_width, extra_max_channels
         m = getattr(torch.nn, m[3:]) if "nn." in m else globals()[m]  # get module
