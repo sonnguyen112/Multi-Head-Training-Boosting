@@ -435,7 +435,7 @@ class DetectionModelCustom(BaseModel):
         # print("Run Custom Loss")
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
-
+        print("Is training in loss", is_training)
         preds = self.forward(batch["img"]) if preds is None else preds
         if is_training:
             total_loss = list(self.criterion(preds[0], batch))
