@@ -120,9 +120,12 @@ class BaseModel(nn.Module):
             (torch.Tensor): The last output of the model.
         """
         y, dt, embeddings = [], [], []  # outputs
-        print("Start backbone")
-        print(x.shape)
-        # print("model", self.model)
+        # print("Start backbone")
+        # print(x.shape)
+        # print("model", self.model) 
+        outputs = []
+        origin_out = None
+        is_origin_out = True
         for m in self.model:
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
@@ -136,11 +139,16 @@ class BaseModel(nn.Module):
                 embeddings.append(nn.functional.adaptive_avg_pool2d(x, (1, 1)).squeeze(-1).squeeze(-1))  # flatten
                 if m.i == max(embed):
                     return torch.unbind(torch.cat(embeddings, 1), dim=0)
-            try:
-                print(f"{m.i} {m.type} {x.shape}")
-            except:
-                print(f"{m.i} {m.type} {x[0].shape}, {x[1].shape}, {x[2].shape}")
-        return x
+            # try:
+            #     print(f"{m.i} {m.type} {x.shape}")
+            # except:
+            #     print(f"{m.i} {m.type} {x[0].shape}, {x[1].shape}, {x[2].shape}")
+            if type(m.f) is list and len(m.f) == 3:
+                outputs.append(x)
+                if is_origin_out:
+                    origin_out = x
+                    is_origin_out = False
+        return origin_out, outputs
 
     def _predict_augment(self, x):
         """Perform augmentations on input image x and return augmented inference."""
@@ -270,8 +278,14 @@ class BaseModel(nn.Module):
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
 
-        preds = self.forward(batch["img"]) if preds is None else preds
-        return self.criterion(preds, batch)
+        preds = self.forward(batch["img"])[1] if preds is None else preds
+        total_loss = list(self.criterion(preds[0], batch))
+        for i in range(1, len(preds)):
+            loss = list(self.criterion(preds[i], batch))
+            total_loss[0] += loss[0]
+            total_loss[1] += loss[1]
+        total_loss = tuple(total_loss)
+        return total_loss
 
     def init_criterion(self):
         """Initialize the loss criterion for the BaseModel."""
@@ -300,7 +314,7 @@ class DetectionModel(BaseModel):
         if isinstance(m, Detect):  # includes all Detect subclasses like Segment, Pose, OBB, WorldDetect
             s = 256  # 2x min stride
             m.inplace = self.inplace
-            forward = lambda x: self.forward(x)[0] if isinstance(m, (Segment, Pose, OBB)) else self.forward(x)
+            forward = lambda x: self.forward(x)[0][0] if isinstance(m, (Segment, Pose, OBB)) else self.forward(x)[0]
             m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
             self.stride = m.stride
             m.bias_init()  # only run once
@@ -858,7 +872,10 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         LOGGER.info(f"\n{'':>3}{'from':>20}{'n':>3}{'params':>10}  {'module':<45}{'arguments':<30}")
     ch = [ch]
     layers, save, c2 = [], [], ch[-1]  # layers, savelist, ch out
-    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"]):  # from, number, module, args
+    extra_depth, extra_width, extra_max_channels = d["extra_scale"]
+    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"] + d["extra_head"] + d["extra_head_2"] + d["extra_head_3"] + d["extra_head_4"]):  # from, number, module, args
+        if i > 22:
+            depth, width, max_channels = extra_depth, extra_width, extra_max_channels
         m = getattr(torch.nn, m[3:]) if "nn." in m else globals()[m]  # get module
         for j, a in enumerate(args):
             if isinstance(a, str):
