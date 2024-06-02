@@ -260,6 +260,7 @@ class BaseModel(nn.Module):
             batch (dict): Batch to compute loss on
             preds (torch.Tensor | List[torch.Tensor]): Predictions.
         """
+        print("Run Origin Loss")
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
 
@@ -277,6 +278,7 @@ class DetectionModel(BaseModel):
     def __init__(self, cfg="yolov8n.yaml", ch=3, nc=None, verbose=True):  # model, input channels, number of classes
         """Initialize the YOLOv8 detection model with the given config and parameters."""
         super().__init__()
+        print("Run Origin Detection Model")
         self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
 
         # Define model
@@ -352,6 +354,7 @@ class DetectionModelCustom(BaseModel):
     def __init__(self, cfg="yolov8n.yaml", ch=3, nc=None, verbose=True):  # model, input channels, number of classes
         """Initialize the YOLOv8 detection model with the given config and parameters."""
         super().__init__()
+        print("Run Custom Detection Model")
         self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
 
         # Define model
@@ -429,6 +432,7 @@ class DetectionModelCustom(BaseModel):
             batch (dict): Batch to compute loss on
             preds (torch.Tensor | List[torch.Tensor]): Predictions.
         """
+        # print("Run Custom Loss")
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
 
@@ -457,6 +461,7 @@ class DetectionModelCustom(BaseModel):
         Returns:
             (torch.Tensor): The last output of the model.
         """
+        # print("Run Custom Predict")
         y, dt, embeddings, outputs = [], [], [], []  # outputs
         for m in self.model:
             if m.f != -1:  # if not from previous layer

@@ -84,7 +84,7 @@ class YOLOCustom(Model):
             },
             "detect": {
                 "model": DetectionModelCustom,
-                "trainer": yolo.detect.DetectionTrainer,
+                "trainer": yolo.detect.DetectionTrainerCustom,
                 "validator": yolo.detect.DetectionValidator,
                 "predictor": yolo.detect.DetectionPredictor,
             },
