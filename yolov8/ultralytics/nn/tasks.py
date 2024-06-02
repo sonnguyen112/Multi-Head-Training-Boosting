@@ -490,9 +490,10 @@ class DetectionModelCustom(BaseModel):
         Returns:
             (torch.Tensor): The output of the network.
         """
-        print("Run Custom Forward")
         if isinstance(x, dict):  # for cases of training and validating while training.
             return self.loss(x, *args, **kwargs)
+        if is_training:
+            return self._predict_once(x, *args, **kwargs)
         return self.predict(x, *args, **kwargs)[0]
 
 
