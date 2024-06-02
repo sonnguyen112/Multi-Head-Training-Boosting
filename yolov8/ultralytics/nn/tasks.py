@@ -104,7 +104,7 @@ class BaseModel(nn.Module):
         """
         if augment:
             return self._predict_augment(x, is_train=is_train)
-        return self._predict_once(x, profile, visualize, embed, is_train)
+        return self._predict_once(x, profile, visualize, embed, is_train=is_train)
 
     def _predict_once(self, x, profile=False, visualize=False, embed=None, is_train=False):
         """
@@ -146,7 +146,7 @@ class BaseModel(nn.Module):
             if type(m.f) is list and len(m.f) == 3:
                 outputs.append(x)
                 if is_origin_out:
-                    origin_out = x
+                    origin_out = x.clone()
                     is_origin_out = False
         if is_train:
             return outputs
