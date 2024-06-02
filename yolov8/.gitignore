@@ -167,4 +167,3 @@ pnnx*
 
 # calibration image
 calibration_*.npy
-dataset/
