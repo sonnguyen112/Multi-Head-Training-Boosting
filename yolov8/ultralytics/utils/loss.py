@@ -270,16 +270,11 @@ class v8DetectionLossCustom(v8DetectionLoss):
 
     def change_detect_head(self,model,index_layer):
         device = next(model.parameters()).device 
-        print("Device: ", device)
-        print("Index Layer: ", index_layer)
         m = model.model[index_layer]
-        self.stride = m.stride  # model strides
-        self.nc = m.nc  # number of classes
         self.no = m.nc + m.reg_max * 4
         self.reg_max = m.reg_max
         self.use_dfl = m.reg_max > 1
 
-        self.assigner = TaskAlignedAssigner(topk=10, num_classes=self.nc, alpha=0.5, beta=6.0)
         self.bbox_loss = BboxLoss(m.reg_max - 1, use_dfl=self.use_dfl).to(device)
         self.proj = torch.arange(m.reg_max, dtype=torch.float, device=device)
 

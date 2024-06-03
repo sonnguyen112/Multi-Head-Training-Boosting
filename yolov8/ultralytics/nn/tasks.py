@@ -313,7 +313,7 @@ class DetectionModel(BaseModel):
         else:
             self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
 
-        print("Stride: ", self.stride)
+        # print("Stride: ", self.stride)
 
         # Init weights, biases
         initialize_weights(self)
