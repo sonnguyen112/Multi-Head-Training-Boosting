@@ -268,7 +268,7 @@ class BaseModel(nn.Module):
             batch (dict): Batch to compute loss on
             preds (torch.Tensor | List[torch.Tensor]): Predictions.
         """
-        print("Run Origin Loss")
+        # print("Run Origin Loss")
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
 
@@ -312,6 +312,8 @@ class DetectionModel(BaseModel):
             m.bias_init()  # only run once
         else:
             self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+
+        print("Stride: ", self.stride)
 
         # Init weights, biases
         initialize_weights(self)
