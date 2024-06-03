@@ -270,6 +270,8 @@ class v8DetectionLossCustom(v8DetectionLoss):
 
     def change_detect_head(self,model,index_layer):
         device = next(model.parameters()).device 
+        print("Device: ", device)
+        print("Index Layer: ", index_layer)
         m = model.model[index_layer]
         self.stride = m.stride  # model strides
         self.nc = m.nc  # number of classes
