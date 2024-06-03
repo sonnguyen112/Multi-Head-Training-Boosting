@@ -1182,7 +1182,7 @@ def parse_model_custom(d, ch, verbose=True):  # model_dict, input_channels(3)
     layers, save, c2 = [], [], ch[-1]  # layers, savelist, ch out
     extra_depth, extra_width, extra_max_channels = d["extra_scale"]
     # from, number, module, args
-    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"] + d["extra_head"] + d["extra_head_2"] + d["extra_head_3"] + d["extra_head_4"]):
+    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"]):
         if i > 22:
             depth, width, max_channels = extra_depth, extra_width, extra_max_channels
         m = getattr(torch.nn, m[3:]) if "nn." in m else globals()[m]  # get module
