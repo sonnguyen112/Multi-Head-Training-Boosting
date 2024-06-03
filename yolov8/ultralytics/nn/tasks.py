@@ -459,6 +459,7 @@ class DetectionModelCustom(BaseModel):
             for i in range(1, len(preds)):
                 self.criterion.change_detect_head(self, extra_layer_index[i])
                 loss = list(self.criterion(preds[i], batch))
+                print("Loss", loss)
                 total_loss[0] += loss[0]
                 total_loss[1] += loss[1]
             total_loss = tuple(total_loss)
