@@ -390,6 +390,7 @@ class DetectionModelCustom(BaseModel):
             m.stride = torch.tensor([s / x.shape[-2]
                                     for x in forward(torch.zeros(1, ch, s, s))])  # forward
             self.stride = m.stride
+            print("Stride", self.stride)
             m.bias_init()  # only run once
         else:
             self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
