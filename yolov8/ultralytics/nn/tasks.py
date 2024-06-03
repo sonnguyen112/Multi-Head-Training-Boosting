@@ -456,6 +456,7 @@ class DetectionModelCustom(BaseModel):
         extra_layer_index = [22, 26, 33, 40, 47]
         if is_training:
             total_loss = list(self.criterion(preds[0], batch))
+            print("\nLoss Layer", 0, ":", total_loss, "\n")
             for i in range(1, len(preds)):
                 self.criterion.change_detect_head(self, extra_layer_index[i])
                 loss = list(self.criterion(preds[i], batch))
