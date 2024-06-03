@@ -7,4 +7,4 @@ from ultralytics import YOLOCustom
 model = YOLOCustom("yolov8s-custom.yaml").load("yolov8s.pt")
 
 # Train the model using the 'coco8.yaml' dataset for 3 epochs
-results = model.train(data="../datasets/datasets_yolo/debug_dataset/data.yaml", epochs=5, batch=1, plots=True)
+results = model.train(data="../datasets/datasets_yolo/mix_det/data.yaml", epochs=80, batch=20, plots=True)
