@@ -458,13 +458,13 @@ class DetectionModelCustom(BaseModel):
             total_loss = list(self.criterion(preds[0], batch))
             print("\nLoss Layer", 0, ":", total_loss, "\n")
             for i in range(1, len(preds)):
-                self.criterion.change_detect_head(self, extra_layer_index[i])
+                # self.criterion.change_detect_head(self, extra_layer_index[i])
                 loss = list(self.criterion(preds[i], batch))
                 print("\nLoss Layer", i, ":", loss, "\n")
                 total_loss[0] += loss[0]
                 total_loss[1] += loss[1]
             total_loss = tuple(total_loss)
-            self.criterion.change_detect_head(self, extra_layer_index[0])
+            # self.criterion.change_detect_head(self, extra_layer_index[0])
             return total_loss
         else:
             return self.criterion(preds, batch)
