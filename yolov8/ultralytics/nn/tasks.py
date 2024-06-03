@@ -52,7 +52,7 @@ from ultralytics.nn.modules import (
 )
 from ultralytics.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
-from ultralytics.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8OBBLoss, v8PoseLoss, v8SegmentationLoss
+from ultralytics.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8OBBLoss, v8PoseLoss, v8SegmentationLoss, v8DetectionLossCustom
 from ultralytics.utils.plotting import feature_visualization
 from ultralytics.utils.torch_utils import (
     fuse_conv_and_bn,
@@ -310,6 +310,7 @@ class DetectionModel(BaseModel):
 
     def _predict_augment(self, x):
         """Perform augmentations on input image x and return augmented inference and train outputs."""
+        print("Run Origin Predict Augment")
         img_size = x.shape[-2:]  # height, width
         s = [1, 0.83, 0.67]  # scales
         f = [None, 3, None]  # flips (2-ud, 3-lr)
@@ -367,11 +368,11 @@ class DetectionModelCustom(BaseModel):
         self.inplace = self.yaml.get("inplace", True)
 
         # Build strides
-        m = self.model[-1]  # Detect()
+        m = self.model[22]  # Detect()
         if isinstance(m, Detect):  # includes all Detect subclasses like Segment, Pose, OBB, WorldDetect
             s = 256  # 2x min stride
             m.inplace = self.inplace
-            forward = lambda x: self.forward(x)[0] if isinstance(m, (Segment, Pose, OBB)) else self.forward(x, is_training = False)
+            forward = lambda x: self.forward(x)[0] if isinstance(m, (Segment, Pose, OBB)) else self.forward(x)
             m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
             self.stride = m.stride
             m.bias_init()  # only run once
@@ -384,8 +385,9 @@ class DetectionModelCustom(BaseModel):
             self.info()
             LOGGER.info("")
 
-    def _predict_augment(self, x, is_training = True):
+    def _predict_augment(self, x, is_training = False):
         """Perform augmentations on input image x and return augmented inference and train outputs."""
+        print("Run Custom Predict Augment")
         img_size = x.shape[-2:]  # height, width
         s = [1, 0.83, 0.67]  # scales
         f = [None, 3, None]  # flips (2-ud, 3-lr)
@@ -422,9 +424,9 @@ class DetectionModelCustom(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        return v8DetectionLoss(self)
+        return v8DetectionLossCustom(self)
     
-    def loss(self, batch, preds=None, is_training=True):
+    def loss(self, batch, preds=None, is_training=False):
         """
         Compute loss.
 
@@ -435,20 +437,22 @@ class DetectionModelCustom(BaseModel):
         # print("Run Custom Loss")
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
-        # print("Is training in loss", is_training)
-        preds = self.forward(batch["img"]) if preds is None else preds
+        preds = self.forward(batch["img"], is_training=is_training) if preds is None else preds
+        extra_layer_index = [22, 26, 33, 40, 47]
         if is_training:
             total_loss = list(self.criterion(preds[0], batch))
             for i in range(1, len(preds)):
+                self.criterion.change_detect_head(self, extra_layer_index[i])
                 loss = list(self.criterion(preds[i], batch))
                 total_loss[0] += loss[0]
                 total_loss[1] += loss[1]
             total_loss = tuple(total_loss)
+            self.criterion.change_detect_head(self, extra_layer_index[0])
             return total_loss
         else:
             return self.criterion(preds, batch)
         
-    def _predict_once(self, x, profile=False, visualize=False, embed=None, is_training=True):
+    def _predict_once(self, x, profile=False, visualize=False, embed=None, is_training=False):
         """
         Perform a forward pass through the network.
 
@@ -485,7 +489,7 @@ class DetectionModelCustom(BaseModel):
             return outputs
         return x
     
-    def predict(self, x, profile=False, visualize=False, augment=False, embed=None, is_training=True):
+    def predict(self, x, profile=False, visualize=False, augment=False, embed=None, is_training=False):
         """
         Perform a forward pass through the network.
 
@@ -1138,7 +1142,7 @@ def parse_model_custom(d, ch, verbose=True):  # model_dict, input_channels(3)
     ch = [ch]
     layers, save, c2 = [], [], ch[-1]  # layers, savelist, ch out
     extra_depth, extra_width, extra_max_channels = d["extra_scale"]
-    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"] + d["extra_head"] + d["extra_head_2"] + d["extra_head_3"] + d["extra_head_4"]):  # from, number, module, args
+    for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"] + d["extra_head"]):  # from, number, module, args
         if i > 22:
             depth, width, max_channels = extra_depth, extra_width, extra_max_channels
         m = getattr(torch.nn, m[3:]) if "nn." in m else globals()[m]  # get module

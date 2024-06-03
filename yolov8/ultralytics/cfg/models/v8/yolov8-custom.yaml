@@ -52,7 +52,7 @@ extra_head:
   - [18, 1, Conv, [512, 1, 1]] # 24
   - [21, 1, Conv, [1024, 1, 1]] # 25
 
-  - [[23, 23, 25], 1, Detect, [nc]] # Detect(P3, P4, P5)
+  - [[23, 24, 25], 1, Detect, [nc]] # Detect(P3, P4, P5)
 
 extra_head_2:
   - [15, 1, Conv, [256, 1, 1]]
