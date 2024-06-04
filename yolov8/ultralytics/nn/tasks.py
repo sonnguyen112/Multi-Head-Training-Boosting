@@ -456,7 +456,7 @@ class DetectionModelCustom(BaseModel):
         if not hasattr(self, "criterion"):
             self.criterion = self.init_criterion()
         preds = self.forward(batch["img"], is_training=is_training) if preds is None else preds
-        extra_layer_index = [22, 26, 33, 40, 47]
+        extra_layer_index = [22, 26, 30, 34, 38]
         if is_training:
             total_loss = list(self.criterion(preds[0], batch))
             # print("\nLoss Layer", 0, ":", total_loss, "\n")
@@ -497,7 +497,7 @@ class DetectionModelCustom(BaseModel):
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
             if is_training:
-                if m.i in {22, 26, 33, 40, 47}:
+                if m.i in {22, 26, 30, 34, 38}:
                     outputs.append([x[0].clone(), x[1].clone(), x[2].clone()])
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
