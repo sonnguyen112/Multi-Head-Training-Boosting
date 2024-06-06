@@ -11,3 +11,4 @@ from .yolox_dual_head_base import DualHeadExp
 from .yolox_triple_head_base import TripleHeadExp
 from .yolox_five_head_base import FiveHeadExp
 from .yolox_triple_head_advance_base import TripleHeadExpAdvance
+from .yolox_n_head_base import MutipleHeadExp

@@ -725,3 +725,47 @@ class v10DetectLoss:
         one2one = preds["one2one"]
         loss_one2one = self.one2one(one2one, batch)
         return loss_one2many[0] + loss_one2one[0], torch.cat((loss_one2many[1], loss_one2one[1]))
+    
+class v10DetectionLossCustom(v10DetectLoss):
+    def __init__(self, model):
+        self.one2many = v8DetectionLossCustom(model, tal_topk=10)
+        self.one2one = v8DetectionLossCustom(model, tal_topk=1)
+
+    def change_detect_head(self,model,index_layer):
+        device = next(model.parameters()).device 
+        m = model.model[index_layer]
+        self.one2many.no = m.nc + m.reg_max * 4
+        self.one2many.reg_max = m.reg_max
+        self.one2many.use_dfl = m.reg_max > 1
+
+        self.one2many.bbox_loss = BboxLoss(m.reg_max - 1, use_dfl=self.one2many.use_dfl).to(device)
+        self.one2many.proj = torch.arange(m.reg_max, dtype=torch.float, device=device)
+
+        self.one2one.no = m.nc + m.reg_max * 4
+        self.one2one.reg_max = m.reg_max
+        self.one2one.use_dfl = m.reg_max > 1
+
+        self.one2one.bbox_loss = BboxLoss(m.reg_max - 1, use_dfl=self.one2one.use_dfl).to(device)
+        self.one2one.proj = torch.arange(m.reg_max, dtype=torch.float, device=device)
+
+class v8DetectionLossCustom(v8DetectionLoss):
+    def __init__(self, model, tal_topk=10):  # model must be de-paralleled
+        """Initializes v8DetectionLoss with the model, defining model-related properties and BCE loss function."""
+        print("Go here")
+        device = next(model.parameters()).device  # get model device
+        h = model.args  # hyperparameters
+
+        m = model.model[23]  # Detect() module
+        self.bce = nn.BCEWithLogitsLoss(reduction="none")
+        self.hyp = h
+        self.stride = m.stride  # model strides
+        self.nc = m.nc  # number of classes
+        self.no = m.no
+        self.reg_max = m.reg_max
+        self.device = device
+
+        self.use_dfl = m.reg_max > 1
+
+        self.assigner = TaskAlignedAssigner(topk=tal_topk, num_classes=self.nc, alpha=0.5, beta=6.0)
+        self.bbox_loss = BboxLoss(m.reg_max - 1, use_dfl=self.use_dfl).to(device)
+        self.proj = torch.arange(m.reg_max, dtype=torch.float, device=device)

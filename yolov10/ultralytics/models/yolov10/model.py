@@ -1,5 +1,5 @@
 from ultralytics.engine.model import Model
-from ultralytics.nn.tasks import YOLOv10DetectionModel
+from ultralytics.nn.tasks import YOLOv10DetectionModel, YOLOv10DetectionModelCustom
 from .val import YOLOv10DetectionValidator
 from .predict import YOLOv10DetectionPredictor
 from .train import YOLOv10DetectionTrainer
@@ -28,6 +28,19 @@ class YOLOv10(Model, PyTorchModelHubMixin, library_name="ultralytics", repo_url=
         return {
             "detect": {
                 "model": YOLOv10DetectionModel,
+                "trainer": YOLOv10DetectionTrainer,
+                "validator": YOLOv10DetectionValidator,
+                "predictor": YOLOv10DetectionPredictor,
+            },
+        }
+    
+class YOLOv10Custom(YOLOv10):
+    @property
+    def task_map(self):
+        """Map head to model, trainer, validator, and predictor classes."""
+        return {
+            "detect": {
+                "model": YOLOv10DetectionModelCustom,
                 "trainer": YOLOv10DetectionTrainer,
                 "validator": YOLOv10DetectionValidator,
                 "predictor": YOLOv10DetectionPredictor,
