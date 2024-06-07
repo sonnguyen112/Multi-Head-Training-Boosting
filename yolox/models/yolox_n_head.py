@@ -27,8 +27,8 @@ class YOLOXMutipleHead(nn.Module):
 
         self.backbone = backbone
         self.head = head
-        self.extra_heads = [copy.deepcopy(extra_head) for _ in range(num_extra_head)]
-
+        self.extra_heads = nn.Sequential(*[copy.deepcopy(extra_head) for _ in range(num_extra_head)])
+                                         
         self.up_channels = [nn.Sequential(
             nn.Conv2d(int(256 * self.head.width), int(256 * e.width), kernel_size=1),
             nn.Conv2d(int(512 * self.head.width), int(512 * e.width), kernel_size=1),
