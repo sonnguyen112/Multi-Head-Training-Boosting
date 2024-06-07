@@ -29,11 +29,11 @@ class YOLOXMutipleHead(nn.Module):
         self.head = head
         self.extra_heads = nn.Sequential(*[copy.deepcopy(extra_head) for _ in range(num_extra_head)])
                                          
-        self.up_channels = [nn.Sequential(
+        self.up_channels = nn.Sequential(*[nn.Sequential(
             nn.Conv2d(int(256 * self.head.width), int(256 * e.width), kernel_size=1),
             nn.Conv2d(int(512 * self.head.width), int(512 * e.width), kernel_size=1),
             nn.Conv2d(int(1024 * self.head.width), int(1024 * e.width), kernel_size=1),
-        ) for e in self.extra_heads]
+        ) for e in self.extra_heads])
 
     def forward(self, x, targets=None):
         # fpn output content features of [dark3, dark4, dark5]
