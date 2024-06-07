@@ -8,4 +8,4 @@ model = YOLOv10Custom('yolov10s-custom.pt')
 # wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
 # model = YOLOv10('yolov10{n/s/m/b/l/x}.pt')
 
-model.train(data='../datasets/datasets_yolo/mix_det/data.yaml', epochs=100, batch=20, imgsz=640)
+model.train(data='../datasets/datasets_yolo/debug_dataset/data.yaml', resume=True, batch = 16)

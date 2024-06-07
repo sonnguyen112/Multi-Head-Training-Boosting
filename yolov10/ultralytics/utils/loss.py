@@ -751,7 +751,6 @@ class v10DetectionLossCustom(v10DetectLoss):
 class v8DetectionLossCustom(v8DetectionLoss):
     def __init__(self, model, tal_topk=10):  # model must be de-paralleled
         """Initializes v8DetectionLoss with the model, defining model-related properties and BCE loss function."""
-        print("Go here")
         device = next(model.parameters()).device  # get model device
         h = model.args  # hyperparameters
 
