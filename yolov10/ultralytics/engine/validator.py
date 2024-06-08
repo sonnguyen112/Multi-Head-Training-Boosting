@@ -167,6 +167,7 @@ class BaseValidator:
         self.init_metrics(de_parallel(model))
         self.jdict = []  # empty before each val
         for batch_i, batch in enumerate(bar):
+            print("Batch: ", batch["img"].shape)
             self.run_callbacks("on_val_batch_start")
             self.batch_i = batch_i
             # Preprocess
@@ -185,6 +186,8 @@ class BaseValidator:
             # Postprocess
             with dt[3]:
                 preds = self.postprocess(preds)
+
+            print("pred", preds.shape)
 
             self.update_metrics(preds, batch)
             if self.args.plots and batch_i < 3:
