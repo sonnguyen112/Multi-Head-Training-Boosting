@@ -14,6 +14,15 @@ class YOLOv10DetectionTrainer(DetectionTrainer):
 
     def get_model(self, cfg=None, weights=None, verbose=True):
         """Return a YOLO detection model."""
+        model = YOLOv10DetectionModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)
+        if weights:
+            model.load(weights)
+        return model
+    
+
+class YOLOv10DetectionTrainerCustom(YOLOv10DetectionTrainer):
+    def get_model(self, cfg=None, weights=None, verbose=True):
+        """Return a YOLO detection model."""
         model = YOLOv10DetectionModelCustom(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)
         if weights:
             model.load(weights)

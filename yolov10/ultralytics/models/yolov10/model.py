@@ -2,7 +2,7 @@ from ultralytics.engine.model import Model
 from ultralytics.nn.tasks import YOLOv10DetectionModel, YOLOv10DetectionModelCustom
 from .val import YOLOv10DetectionValidator
 from .predict import YOLOv10DetectionPredictor
-from .train import YOLOv10DetectionTrainer
+from .train import YOLOv10DetectionTrainer, YOLOv10DetectionTrainerCustom
 
 from huggingface_hub import PyTorchModelHubMixin
 
@@ -41,7 +41,7 @@ class YOLOv10Custom(YOLOv10):
         return {
             "detect": {
                 "model": YOLOv10DetectionModelCustom,
-                "trainer": YOLOv10DetectionTrainer,
+                "trainer": YOLOv10DetectionTrainerCustom,
                 "validator": YOLOv10DetectionValidator,
                 "predictor": YOLOv10DetectionPredictor,
             },
