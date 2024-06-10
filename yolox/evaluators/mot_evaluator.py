@@ -984,7 +984,8 @@ class MOTEvaluator:
             ap50 (float) : COCO AP of IoU=50
             summary (sr): summary info of evaluation.
         """
-        model_yolov10 = YOLOv10Custom("yolov10s-custom.pt")
+        # model_yolov8 = YOLO("yolov8s.pt")
+        model_yolov8 = YOLOCustom("yolov8s-custom.pt")
         # TODO half to amp_test
         tensor_type = torch.cuda.HalfTensor if half else torch.cuda.FloatTensor
         model = model.eval()
@@ -1061,7 +1062,7 @@ class MOTEvaluator:
                     start = time.time()
 
                 # outputs = model(imgs)
-                result = model_yolov10(source=f"datasets/mot/train/{img_path}", conf=0, save=False, imgsz=640)
+                result = model_yolov8(source=f"datasets/mot/train/{img_path}", conf=0, save=False, imgsz=640)
                 bbox = result[0].boxes.xyxy
                 bbox = bbox * scale
                 cls = result[0].boxes.cls.view(-1, 1)

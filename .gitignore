@@ -142,3 +142,4 @@ YOLOX_outputs
 datasets
 videos_for_eval
 runs
+*.pt
