@@ -24,6 +24,7 @@ import itertools
 import json
 import tempfile
 import time
+from yolov10.ultralytics import YOLOv10
 # from yolov8.ultralytics import YOLO,YOLOCustom
 
 
@@ -35,7 +36,8 @@ def write_results(filename, results):
                 if track_id < 0:
                     continue
                 x1, y1, w, h = tlwh
-                line = save_format.format(frame=frame_id, id=track_id, x1=round(x1, 1), y1=round(y1, 1), w=round(w, 1), h=round(h, 1), s=round(score, 2))
+                line = save_format.format(frame=frame_id, id=track_id, x1=round(
+                    x1, 1), y1=round(y1, 1), w=round(w, 1), h=round(h, 1), s=round(score, 2))
                 f.write(line)
     logger.info('save results to {}'.format(filename))
 
@@ -48,7 +50,8 @@ def write_results_no_score(filename, results):
                 if track_id < 0:
                     continue
                 x1, y1, w, h = tlwh
-                line = save_format.format(frame=frame_id, id=track_id, x1=round(x1, 1), y1=round(y1, 1), w=round(w, 1), h=round(h, 1))
+                line = save_format.format(frame=frame_id, id=track_id, x1=round(
+                    x1, 1), y1=round(y1, 1), w=round(w, 1), h=round(h, 1))
                 f.write(line)
     logger.info('save results to {}'.format(filename))
 
@@ -60,7 +63,7 @@ class MOTEvaluator:
     """
 
     def __init__(
-        self, args, dataloader, img_size, confthre, nmsthre, num_classes):
+            self, args, dataloader, img_size, confthre, nmsthre, num_classes):
         """
         Args:
             dataloader (Dataloader): evaluate dataloader.
@@ -125,7 +128,7 @@ class MOTEvaluator:
             x = torch.ones(1, 3, test_size[0], test_size[1]).cuda()
             model(x)
             model = model_trt
-            
+
         tracker = BYTETracker(self.args)
         ori_thresh = self.args.track_thresh
         for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
@@ -162,7 +165,8 @@ class MOTEvaluator:
                 if frame_id == 1:
                     tracker = BYTETracker(self.args)
                     if len(results) != 0:
-                        result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id - 1]))
+                        result_filename = os.path.join(
+                            result_folder, '{}.txt'.format(video_names[video_id - 1]))
                         write_results(result_filename, results)
                         results = []
 
@@ -178,7 +182,7 @@ class MOTEvaluator:
                     outputs = decoder(outputs, dtype=outputs.type())
 
                 outputs = postprocess(outputs, self.num_classes, self.confthre, self.nmsthre)
-            
+
                 if is_time_record:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
@@ -206,9 +210,10 @@ class MOTEvaluator:
             if is_time_record:
                 track_end = time_synchronized()
                 track_time += track_end - infer_end
-            
+
             if cur_iter == len(self.dataloader) - 1:
-                result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id]))
+                result_filename = os.path.join(
+                    result_folder, '{}.txt'.format(video_names[video_id]))
                 write_results(result_filename, results)
 
         statistics = torch.cuda.FloatTensor([inference_time, track_time, n_samples])
@@ -269,9 +274,9 @@ class MOTEvaluator:
             x = torch.ones(1, 3, test_size[0], test_size[1]).cuda()
             model(x)
             model = model_trt
-            
+
         tracker = Sort(self.args.track_thresh)
-        
+
         for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
             progress_bar(self.dataloader)
         ):
@@ -287,7 +292,8 @@ class MOTEvaluator:
                 if frame_id == 1:
                     tracker = Sort(self.args.track_thresh)
                     if len(results) != 0:
-                        result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id - 1]))
+                        result_filename = os.path.join(
+                            result_folder, '{}.txt'.format(video_names[video_id - 1]))
                         write_results_no_score(result_filename, results)
                         results = []
 
@@ -303,7 +309,7 @@ class MOTEvaluator:
                     outputs = decoder(outputs, dtype=outputs.type())
 
                 outputs = postprocess(outputs, self.num_classes, self.confthre, self.nmsthre)
-            
+
                 if is_time_record:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
@@ -328,9 +334,10 @@ class MOTEvaluator:
             if is_time_record:
                 track_end = time_synchronized()
                 track_time += track_end - infer_end
-            
+
             if cur_iter == len(self.dataloader) - 1:
-                result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id]))
+                result_filename = os.path.join(
+                    result_folder, '{}.txt'.format(video_names[video_id]))
                 write_results_no_score(result_filename, results)
 
         statistics = torch.cuda.FloatTensor([inference_time, track_time, n_samples])
@@ -392,9 +399,9 @@ class MOTEvaluator:
             x = torch.ones(1, 3, test_size[0], test_size[1]).cuda()
             model(x)
             model = model_trt
-            
+
         tracker = DeepSort(model_folder, min_confidence=self.args.track_thresh)
-        
+
         for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
             progress_bar(self.dataloader)
         ):
@@ -410,7 +417,8 @@ class MOTEvaluator:
                 if frame_id == 1:
                     tracker = DeepSort(model_folder, min_confidence=self.args.track_thresh)
                     if len(results) != 0:
-                        result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id - 1]))
+                        result_filename = os.path.join(
+                            result_folder, '{}.txt'.format(video_names[video_id - 1]))
                         write_results_no_score(result_filename, results)
                         results = []
 
@@ -426,7 +434,7 @@ class MOTEvaluator:
                     outputs = decoder(outputs, dtype=outputs.type())
 
                 outputs = postprocess(outputs, self.num_classes, self.confthre, self.nmsthre)
-            
+
                 if is_time_record:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
@@ -451,9 +459,10 @@ class MOTEvaluator:
             if is_time_record:
                 track_end = time_synchronized()
                 track_time += track_end - infer_end
-            
+
             if cur_iter == len(self.dataloader) - 1:
-                result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id]))
+                result_filename = os.path.join(
+                    result_folder, '{}.txt'.format(video_names[video_id]))
                 write_results_no_score(result_filename, results)
 
         statistics = torch.cuda.FloatTensor([inference_time, track_time, n_samples])
@@ -515,7 +524,7 @@ class MOTEvaluator:
             x = torch.ones(1, 3, test_size[0], test_size[1]).cuda()
             model(x)
             model = model_trt
-            
+
         tracker = OnlineTracker(model_folder, min_cls_score=self.args.track_thresh)
         for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
             progress_bar(self.dataloader)
@@ -532,7 +541,8 @@ class MOTEvaluator:
                 if frame_id == 1:
                     tracker = OnlineTracker(model_folder, min_cls_score=self.args.track_thresh)
                     if len(results) != 0:
-                        result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id - 1]))
+                        result_filename = os.path.join(
+                            result_folder, '{}.txt'.format(video_names[video_id - 1]))
                         write_results(result_filename, results)
                         results = []
 
@@ -548,7 +558,7 @@ class MOTEvaluator:
                     outputs = decoder(outputs, dtype=outputs.type())
 
                 outputs = postprocess(outputs, self.num_classes, self.confthre, self.nmsthre)
-            
+
                 if is_time_record:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
@@ -575,9 +585,10 @@ class MOTEvaluator:
             if is_time_record:
                 track_end = time_synchronized()
                 track_time += track_end - infer_end
-            
+
             if cur_iter == len(self.dataloader) - 1:
-                result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id]))
+                result_filename = os.path.join(
+                    result_folder, '{}.txt'.format(video_names[video_id]))
                 write_results(result_filename, results)
 
         statistics = torch.cuda.FloatTensor([inference_time, track_time, n_samples])
@@ -663,7 +674,7 @@ class MOTEvaluator:
                 from pycocotools import cocoeval as COCOeval
                 logger.warning("Use standard COCOeval.")
             '''
-            #from pycocotools.cocoeval import COCOeval
+            # from pycocotools.cocoeval import COCOeval
             from yolox.layers import COCOeval_opt as COCOeval
             cocoEval = COCOeval(cocoGt, cocoDt, annType[1])
             cocoEval.evaluate()
@@ -675,15 +686,15 @@ class MOTEvaluator:
             return cocoEval.stats[0], cocoEval.stats[1], info
         else:
             return 0, 0, info
-        
+
     def evaluate_kalman(self,
-        model,
-        distributed=False,
-        half=False,
-        trt_file=None,
-        decoder=None,
-        test_size=None,
-        result_folder=None):
+                        model,
+                        distributed=False,
+                        half=False,
+                        trt_file=None,
+                        decoder=None,
+                        test_size=None,
+                        result_folder=None):
 
         tensor_type = torch.cuda.HalfTensor if half else torch.cuda.FloatTensor
         model = model.eval()
@@ -708,7 +719,7 @@ class MOTEvaluator:
             x = torch.ones(1, 3, test_size[0], test_size[1]).cuda()
             model(x)
             model = model_trt
-            
+
         tracker = BYTETracker(self.args)
         ori_thresh = self.args.track_thresh
         for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
@@ -745,7 +756,8 @@ class MOTEvaluator:
                 if frame_id == 1:
                     tracker = BYTETracker(self.args)
                     if len(results) != 0:
-                        result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id - 1]))
+                        result_filename = os.path.join(
+                            result_folder, '{}.txt'.format(video_names[video_id - 1]))
                         write_results(result_filename, results)
                         results = []
 
@@ -761,7 +773,7 @@ class MOTEvaluator:
                     outputs = decoder(outputs, dtype=outputs.type())
 
                 outputs = postprocess(outputs, self.num_classes, self.confthre, self.nmsthre)
-            
+
                 if is_time_record:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
@@ -789,9 +801,10 @@ class MOTEvaluator:
             if is_time_record:
                 track_end = time_synchronized()
                 track_time += track_end - infer_end
-            
+
             if cur_iter == len(self.dataloader) - 1:
-                result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id]))
+                result_filename = os.path.join(
+                    result_folder, '{}.txt'.format(video_names[video_id]))
                 write_results(result_filename, results)
 
         statistics = torch.cuda.FloatTensor([inference_time, track_time, n_samples])
@@ -803,7 +816,7 @@ class MOTEvaluator:
         eval_results = self.evaluate_prediction(data_list, statistics)
         synchronize()
         return eval_results
-    
+
     def evaluate_yolov10(
         self,
         model,
@@ -828,7 +841,7 @@ class MOTEvaluator:
             ap50 (float) : COCO AP of IoU=50
             summary (sr): summary info of evaluation.
         """
-        model_yolov10 = YOLOv10Custom("yolov10s-custom.pt")
+        model_yolov10 = YOLOv10("yolov10s.pt")
         # TODO half to amp_test
         tensor_type = torch.cuda.HalfTensor if half else torch.cuda.FloatTensor
         model = model.eval()
@@ -853,7 +866,7 @@ class MOTEvaluator:
             x = torch.ones(1, 3, test_size[0], test_size[1]).cuda()
             model(x)
             model = model_trt
-            
+
         tracker = BYTETracker(self.args)
         ori_thresh = self.args.track_thresh
         for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
@@ -890,14 +903,16 @@ class MOTEvaluator:
                 if frame_id == 1:
                     tracker = BYTETracker(self.args)
                     if len(results) != 0:
-                        result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id - 1]))
+                        result_filename = os.path.join(
+                            result_folder, '{}.txt'.format(video_names[video_id - 1]))
                         write_results(result_filename, results)
                         results = []
 
                 # imgs = imgs.type(tensor_type)
                 img_path = info_imgs[4][0]
-                scale = 640 / max(float(info_imgs[0]), float(info_imgs[1]))
-                self.img_size = (int(info_imgs[0] * scale), int(info_imgs[1] * scale))
+                scale = min(
+                    self.img_size[0] / float(info_imgs[0]), self.img_size[1] / float(info_imgs[1])
+                )
 
                 # skip the the last iters since batchsize might be not enough for batch inference
                 is_time_record = cur_iter < len(self.dataloader) - 1
@@ -905,9 +920,11 @@ class MOTEvaluator:
                     start = time.time()
 
                 # outputs = model(imgs)
-                result = model_yolov10(source=f"datasets/mot/train/{img_path}", conf=0, save=False, imgsz=640)
-                bbox = result[0].boxes.xyxy
-                bbox = bbox * scale
+                result = model_yolov10(
+                    source=f"datasets/mot/train/{img_path}", conf=0.1, save=True, imgsz=640, half=True)
+                bbox = result[0].boxes.xyxy * scale
+                print("result[0]", result[0].boxes)
+                # print("Max x,y", max(bbox[0]), max(bbox[1]))
                 cls = result[0].boxes.cls.view(-1, 1)
                 ones = torch.ones_like(cls)
                 conf = result[0].boxes.conf.view(-1, 1)
@@ -916,7 +933,7 @@ class MOTEvaluator:
                 #     outputs = decoder(outputs, dtype=outputs.type())
 
                 # outputs = postprocess(outputs, self.num_classes, self.confthre, self.nmsthre)
-            
+
                 if is_time_record:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
@@ -944,9 +961,10 @@ class MOTEvaluator:
             if is_time_record:
                 track_end = time_synchronized()
                 track_time += track_end - infer_end
-            
+
             if cur_iter == len(self.dataloader) - 1:
-                result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id]))
+                result_filename = os.path.join(
+                    result_folder, '{}.txt'.format(video_names[video_id]))
                 write_results(result_filename, results)
 
         statistics = torch.cuda.FloatTensor([inference_time, track_time, n_samples])
@@ -958,8 +976,7 @@ class MOTEvaluator:
         eval_results = self.evaluate_prediction(data_list, statistics)
         synchronize()
         return eval_results
-    
-    
+
     def evaluate_yolov8(
         self,
         model,
@@ -1010,7 +1027,7 @@ class MOTEvaluator:
             x = torch.ones(1, 3, test_size[0], test_size[1]).cuda()
             model(x)
             model = model_trt
-            
+
         tracker = BYTETracker(self.args)
         ori_thresh = self.args.track_thresh
         for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
@@ -1047,7 +1064,8 @@ class MOTEvaluator:
                 if frame_id == 1:
                     tracker = BYTETracker(self.args)
                     if len(results) != 0:
-                        result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id - 1]))
+                        result_filename = os.path.join(
+                            result_folder, '{}.txt'.format(video_names[video_id - 1]))
                         write_results(result_filename, results)
                         results = []
 
@@ -1062,7 +1080,8 @@ class MOTEvaluator:
                     start = time.time()
 
                 # outputs = model(imgs)
-                result = model_yolov8(source=f"datasets/mot/train/{img_path}", conf=0, save=False, imgsz=640)
+                result = model_yolov8(
+                    source=f"datasets/mot/train/{img_path}", conf=0, save=False, imgsz=640)
                 bbox = result[0].boxes.xyxy
                 bbox = bbox * scale
                 cls = result[0].boxes.cls.view(-1, 1)
@@ -1073,7 +1092,7 @@ class MOTEvaluator:
                 #     outputs = decoder(outputs, dtype=outputs.type())
 
                 # outputs = postprocess(outputs, self.num_classes, self.confthre, self.nmsthre)
-            
+
                 if is_time_record:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
@@ -1101,9 +1120,10 @@ class MOTEvaluator:
             if is_time_record:
                 track_end = time_synchronized()
                 track_time += track_end - infer_end
-            
+
             if cur_iter == len(self.dataloader) - 1:
-                result_filename = os.path.join(result_folder, '{}.txt'.format(video_names[video_id]))
+                result_filename = os.path.join(
+                    result_folder, '{}.txt'.format(video_names[video_id]))
                 write_results(result_filename, results)
 
         statistics = torch.cuda.FloatTensor([inference_time, track_time, n_samples])
