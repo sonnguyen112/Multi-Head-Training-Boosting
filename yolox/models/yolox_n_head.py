@@ -142,12 +142,7 @@ class YOLOXMutipleHead(nn.Module):
             loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg = self.head(
                 fpn_outs, targets, x
             )
-            mixup = targets.shape[2] > 5
-            if mixup:
-                label_cut = targets[..., :5]
-            else:
-                label_cut = targets
-            nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
+            
             
                 
 
@@ -176,6 +171,12 @@ class YOLOXMutipleHead(nn.Module):
                     kd_nonlocal_loss += torch.dist(
                         self.non_local_adaptation[i](s_relation), t_relation, p=2)
                     
+                    mixup = targets.shape[2] > 5
+                    if mixup:
+                        label_cut = targets[..., :5]
+                    else:
+                        label_cut = targets
+                    nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
                     for batch_idx in range(targets.shape[0]):
                         num_gt = int(nlabel[batch_idx])
                         if num_gt == 0:
