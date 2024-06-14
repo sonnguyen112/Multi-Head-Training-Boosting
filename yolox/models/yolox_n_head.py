@@ -180,7 +180,7 @@ class YOLOXMutipleHead(nn.Module):
                     for batch_idx in range(targets.shape[0]):
                         num_gt = int(nlabel[batch_idx])
                         if num_gt == 0:
-                            print("num_gt == 0")
+                            # print("num_gt == 0")
                             continue
                         gt_bboxes_per_image = targets[batch_idx, :num_gt, 1:5]
                         # convert from xywh to tlbr
