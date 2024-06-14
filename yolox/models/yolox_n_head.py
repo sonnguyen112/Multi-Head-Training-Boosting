@@ -155,6 +155,7 @@ class YOLOXMutipleHead(nn.Module):
                 extra_fpn_outs = list(fpn_outs)
                 for i in range(len(extra_fpn_outs)):
                     extra_fpn_outs[i] = self.up_channels[extra_index][i](extra_fpn_outs[i])
+                    total_extra_loss += torch.dist(extra_fpn_outs[i], t_fpn_outs[i], p=2) * 0.05
                 extra_fpn_outs = tuple(extra_fpn_outs)
                 extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_heads[extra_index](
                     extra_fpn_outs, targets, x
@@ -205,7 +206,6 @@ class YOLOXMutipleHead(nn.Module):
                 #         kd_foreground_loss *= 0.06
 
                 # total_drkd_loss += kd_nonlocal_loss + kd_relation_loss + kd_foreground_loss
-                total_extra_loss += torch.dist(extra_fpn_outs[i], t_fpn_outs[i], p=2) * 0.05
 
             outputs = {
                 "total_loss": loss + total_extra_loss + total_drkd_loss,
