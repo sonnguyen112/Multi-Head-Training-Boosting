@@ -200,6 +200,10 @@ class YOLOXMutipleHead(nn.Module):
                             s_object_relation), t_object_relation, p=2)
                         kd_foreground_loss += torch.dist(self.for_adaptation[i](s_region), t_region, p=2)
 
+                        kd_nonlocal_loss *= 4e-3
+                        kd_relation_loss *= 0.05
+                        kd_foreground_loss *= 0.06
+
                 total_drkd_loss += kd_nonlocal_loss + kd_relation_loss + kd_foreground_loss
 
             outputs = {
