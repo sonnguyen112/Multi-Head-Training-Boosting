@@ -155,7 +155,7 @@ class YOLOXMutipleHead(nn.Module):
                 extra_fpn_outs = list(fpn_outs)
                 for i in range(len(extra_fpn_outs)):
                     extra_fpn_outs[i] = self.up_channels[extra_index][i](extra_fpn_outs[i])
-                    total_extra_loss += torch.dist((extra_fpn_outs[i] - min(extra_fpn_outs[i]) / (max(extra_fpn_outs[i]) - min(extra_fpn_outs[i]))), (t_fpn_outs[i] - min(t_fpn_outs[i]) / (max(t_fpn_outs[i]) - min(t_fpn_outs[i]))), p=2) * 0.05
+                    total_extra_loss += torch.dist((extra_fpn_outs[i] - extra_fpn_outs[i].min()) / (extra_fpn_outs[i].max() - extra_fpn_outs[i].min()), (t_fpn_outs[i] - t_fpn_outs[i].min()) / (t_fpn_outs[i].max() - t_fpn_outs[i].min()), p=2) * 0.05
                 extra_fpn_outs = tuple(extra_fpn_outs)
                 extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_heads[extra_index](
                     extra_fpn_outs, targets, x
