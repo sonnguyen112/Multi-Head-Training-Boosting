@@ -104,16 +104,16 @@ class YOLOXMutipleHead(nn.Module):
 
         self.student_relation = nn.ModuleList(
             [
-                ObjectRelation_1(in_channels=128 * 9),
-                ObjectRelation_1(in_channels=256 * 9),
-                ObjectRelation_1(in_channels=512 * 9),
+                ObjectRelation_1(in_channels=int(256 * extra_head.width) * 9),
+                ObjectRelation_1(in_channels=int(512 * extra_head.width) * 9),
+                ObjectRelation_1(in_channels=int(1024 * extra_head.width) * 9),
             ]
         )
         self.teacher_relation = nn.ModuleList(
             [
-                ObjectRelation_1(in_channels=128 * 9),
-                ObjectRelation_1(in_channels=256 * 9),
-                ObjectRelation_1(in_channels=512 * 9),
+                ObjectRelation_1(in_channels=int(256 * extra_head.width) * 9),
+                ObjectRelation_1(in_channels=int(512 * extra_head.width) * 9),
+                ObjectRelation_1(in_channels=int(1024 * extra_head.width) * 9),
             ]
         )
         self.relation_adaptation = nn.ModuleList([
