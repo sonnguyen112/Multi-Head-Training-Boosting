@@ -25,7 +25,7 @@ import torch
 #-----------------------------------------------------------------------------
 state_dict = torch.load("pretrained/yolox_s.pth")
 extra_state_dict = torch.load("pretrained/yolox_x.pth")
-num_extra_head = 8
+num_extra_head = 4
 for i in range(num_extra_head):
     for k in list(extra_state_dict["model"].keys()):
         if "head" in k:
