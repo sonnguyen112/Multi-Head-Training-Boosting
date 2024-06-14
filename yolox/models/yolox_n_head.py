@@ -79,59 +79,59 @@ class YOLOXMutipleHead(nn.Module):
              nn.Conv2d(int(1024 * self.head.width), int(1024 * e.width), kernel_size=1)]
         ) for e in self.extra_heads])
 
-        self.student_non_local = nn.ModuleList(
-            [
-                GloRe_Unit_2D(int(256 * extra_head.width), int(256 * extra_head.width)),
-                GloRe_Unit_2D(int(512 * extra_head.width), int(512 * extra_head.width)),
-                GloRe_Unit_2D(int(1024 * extra_head.width), int(1024 * extra_head.width)),
-            ]
-        )
-        self.teacher_non_local = nn.ModuleList(
-            [
-                GloRe_Unit_2D(int(256 * extra_head.width), int(256 * extra_head.width)),
-                GloRe_Unit_2D(int(512 * extra_head.width), int(512 * extra_head.width)),
-                GloRe_Unit_2D(int(1024 * extra_head.width), int(1024 * extra_head.width)),
-            ]
-        )
-        self.non_local_adaptation = nn.ModuleList([
-            nn.Conv2d(int(256 * extra_head.width), int(256 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(int(512 * extra_head.width), int(512 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(int(1024 * extra_head.width), int(1024 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-        ])
+        # self.student_non_local = nn.ModuleList(
+        #     [
+        #         GloRe_Unit_2D(int(256 * extra_head.width), int(256 * extra_head.width)),
+        #         GloRe_Unit_2D(int(512 * extra_head.width), int(512 * extra_head.width)),
+        #         GloRe_Unit_2D(int(1024 * extra_head.width), int(1024 * extra_head.width)),
+        #     ]
+        # )
+        # self.teacher_non_local = nn.ModuleList(
+        #     [
+        #         GloRe_Unit_2D(int(256 * extra_head.width), int(256 * extra_head.width)),
+        #         GloRe_Unit_2D(int(512 * extra_head.width), int(512 * extra_head.width)),
+        #         GloRe_Unit_2D(int(1024 * extra_head.width), int(1024 * extra_head.width)),
+        #     ]
+        # )
+        # self.non_local_adaptation = nn.ModuleList([
+        #     nn.Conv2d(int(256 * extra_head.width), int(256 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(int(512 * extra_head.width), int(512 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(int(1024 * extra_head.width), int(1024 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        # ])
 
-        self.student_relation = nn.ModuleList(
-            [
-                ObjectRelation_1(in_channels=int(256 * extra_head.width) * 9),
-                ObjectRelation_1(in_channels=int(512 * extra_head.width) * 9),
-                ObjectRelation_1(in_channels=int(1024 * extra_head.width) * 9),
-            ]
-        )
-        self.teacher_relation = nn.ModuleList(
-            [
-                ObjectRelation_1(in_channels=int(256 * extra_head.width) * 9),
-                ObjectRelation_1(in_channels=int(512 * extra_head.width) * 9),
-                ObjectRelation_1(in_channels=int(1024 * extra_head.width) * 9),
-            ]
-        )
-        self.relation_adaptation = nn.ModuleList([
-            nn.Conv2d(int(256 * extra_head.width), int(256 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(int(512 * extra_head.width), int(512 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(int(1024 * extra_head.width), int(1024 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-        ])
-        self.for_adaptation = nn.ModuleList([
-            nn.Conv2d(int(256 * extra_head.width), int(256 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(int(512 * extra_head.width), int(512 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(int(1024 * extra_head.width), int(1024 * extra_head.width),
-                      kernel_size=1, stride=1, padding=0),
-        ])
+        # self.student_relation = nn.ModuleList(
+        #     [
+        #         ObjectRelation_1(in_channels=int(256 * extra_head.width) * 9),
+        #         ObjectRelation_1(in_channels=int(512 * extra_head.width) * 9),
+        #         ObjectRelation_1(in_channels=int(1024 * extra_head.width) * 9),
+        #     ]
+        # )
+        # self.teacher_relation = nn.ModuleList(
+        #     [
+        #         ObjectRelation_1(in_channels=int(256 * extra_head.width) * 9),
+        #         ObjectRelation_1(in_channels=int(512 * extra_head.width) * 9),
+        #         ObjectRelation_1(in_channels=int(1024 * extra_head.width) * 9),
+        #     ]
+        # )
+        # self.relation_adaptation = nn.ModuleList([
+        #     nn.Conv2d(int(256 * extra_head.width), int(256 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(int(512 * extra_head.width), int(512 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(int(1024 * extra_head.width), int(1024 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        # ])
+        # self.for_adaptation = nn.ModuleList([
+        #     nn.Conv2d(int(256 * extra_head.width), int(256 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(int(512 * extra_head.width), int(512 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        #     nn.Conv2d(int(1024 * extra_head.width), int(1024 * extra_head.width),
+        #               kernel_size=1, stride=1, padding=0),
+        # ])
 
     def forward(self, x, targets=None, t_model=None):
         # fpn output content features of [dark3, dark4, dark5]
@@ -162,49 +162,50 @@ class YOLOXMutipleHead(nn.Module):
                 total_extra_loss += extra_loss
 
                 # Caculate drkd loss
-                kd_nonlocal_loss = 0
-                kd_relation_loss = 0
-                kd_foreground_loss = 0
-                for i in range(len(extra_fpn_outs)):
-                    s_relation = self.student_non_local[i](extra_fpn_outs[i])
-                    t_relation = self.teacher_non_local[i](t_fpn_outs[i])
-                    kd_nonlocal_loss += torch.dist(
-                        self.non_local_adaptation[i](s_relation), t_relation, p=2)
+                # kd_nonlocal_loss = 0
+                # kd_relation_loss = 0
+                # kd_foreground_loss = 0
+                # for i in range(len(extra_fpn_outs)):
+                #     s_relation = self.student_non_local[i](extra_fpn_outs[i])
+                #     t_relation = self.teacher_non_local[i](t_fpn_outs[i])
+                #     kd_nonlocal_loss += torch.dist(
+                #         self.non_local_adaptation[i](s_relation), t_relation, p=2)
                     
-                    mixup = targets.shape[2] > 5
-                    if mixup:
-                        label_cut = targets[..., :5]
-                    else:
-                        label_cut = targets
-                    nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
-                    for batch_idx in range(targets.shape[0]):
-                        num_gt = int(nlabel[batch_idx])
-                        if num_gt == 0:
-                            # print("num_gt == 0")
-                            continue
-                        gt_bboxes_per_image = targets[batch_idx, :num_gt, 1:5]
-                        # convert from xywh to tlbr
-                        gt_bboxes_per_image[:, :2] = gt_bboxes_per_image[:, :2] - \
-                            gt_bboxes_per_image[:, 2:] / 2
-                        gt_bboxes_per_image[:, 2:] = gt_bboxes_per_image[:, :2] + gt_bboxes_per_image[:, 2:]
-                        # Normalize for all value > 0
-                        gt_bboxes_per_image = torch.clamp(gt_bboxes_per_image, min=0)
+                #     mixup = targets.shape[2] > 5
+                #     if mixup:
+                #         label_cut = targets[..., :5]
+                #     else:
+                #         label_cut = targets
+                #     nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
+                #     for batch_idx in range(targets.shape[0]):
+                #         num_gt = int(nlabel[batch_idx])
+                #         if num_gt == 0:
+                #             # print("num_gt == 0")
+                #             continue
+                #         gt_bboxes_per_image = targets[batch_idx, :num_gt, 1:5]
+                #         # convert from xywh to tlbr
+                #         gt_bboxes_per_image[:, :2] = gt_bboxes_per_image[:, :2] - \
+                #             gt_bboxes_per_image[:, 2:] / 2
+                #         gt_bboxes_per_image[:, 2:] = gt_bboxes_per_image[:, :2] + gt_bboxes_per_image[:, 2:]
+                #         # Normalize for all value > 0
+                #         gt_bboxes_per_image = torch.clamp(gt_bboxes_per_image, min=0)
 
-                        s_region = roi_align(
-                            extra_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=extra_fpn_outs[i].shape[-1] / 1088)
-                        t_region = roi_align(
-                            t_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=t_fpn_outs[i].shape[-1] / 1088)
-                        s_object_relation = self.student_relation[i](s_region)
-                        t_object_relation = self.teacher_relation[i](t_region)
-                        kd_relation_loss += torch.dist(self.relation_adaptation[i](
-                            s_object_relation), t_object_relation, p=2)
-                        kd_foreground_loss += torch.dist(self.for_adaptation[i](s_region), t_region, p=2)
+                #         s_region = roi_align(
+                #             extra_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=extra_fpn_outs[i].shape[-1] / 1088)
+                #         t_region = roi_align(
+                #             t_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=t_fpn_outs[i].shape[-1] / 1088)
+                #         s_object_relation = self.student_relation[i](s_region)
+                #         t_object_relation = self.teacher_relation[i](t_region)
+                #         kd_relation_loss += torch.dist(self.relation_adaptation[i](
+                #             s_object_relation), t_object_relation, p=2)
+                #         kd_foreground_loss += torch.dist(self.for_adaptation[i](s_region), t_region, p=2)
 
-                        kd_nonlocal_loss *= 4e-3
-                        kd_relation_loss *= 0.05
-                        kd_foreground_loss *= 0.06
+                #         kd_nonlocal_loss *= 4e-3
+                #         kd_relation_loss *= 0.05
+                #         kd_foreground_loss *= 0.06
 
-                total_drkd_loss += kd_nonlocal_loss + kd_relation_loss + kd_foreground_loss
+                # total_drkd_loss += kd_nonlocal_loss + kd_relation_loss + kd_foreground_loss
+                total_extra_loss += torch.dist(extra_fpn_outs[i], t_fpn_outs[i], p=2) * 0.05
 
             outputs = {
                 "total_loss": loss + total_extra_loss + total_drkd_loss,
