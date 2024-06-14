@@ -15,7 +15,7 @@ class Exp(MyExp):
         self.depth = 0.33
         self.width = 0.50
         self.extra_width = 1.25
-        self.num_extra_head = 4
+        self.num_extra_head = 1
         self.exp_name = os.path.split(os.path.realpath(__file__))[1].split(".")[0]
         self.train_ann = "train.json"
         self.val_ann = "train.json"
