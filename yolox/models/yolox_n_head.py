@@ -143,6 +143,9 @@ class YOLOXMutipleHead(nn.Module):
                 fpn_outs, targets, x
             )
             
+            
+                
+
             with torch.no_grad():
                 t_fpn_outs = t_model.backbone(x)
 
@@ -152,6 +155,7 @@ class YOLOXMutipleHead(nn.Module):
                 extra_fpn_outs = list(fpn_outs)
                 for i in range(len(extra_fpn_outs)):
                     extra_fpn_outs[i] = self.up_channels[extra_index][i](extra_fpn_outs[i])
+                    total_drkd_loss += torch.dist((extra_fpn_outs[i] - extra_fpn_outs[i].min()) / (extra_fpn_outs[i].max() - extra_fpn_outs[i].min()), (t_fpn_outs[i] - t_fpn_outs[i].min()) / (t_fpn_outs[i].max() - t_fpn_outs[i].min()), p=2) * 0.05
                 extra_fpn_outs = tuple(extra_fpn_outs)
                 extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_heads[extra_index](
                     extra_fpn_outs, targets, x
@@ -159,49 +163,49 @@ class YOLOXMutipleHead(nn.Module):
                 total_extra_loss += extra_loss
 
                 # Caculate drkd loss
-                kd_nonlocal_loss = 0
-                kd_relation_loss = 0
-                kd_foreground_loss = 0
-                for i in range(len(extra_fpn_outs)):
-                    s_relation = self.student_non_local[i](extra_fpn_outs[i])
-                    t_relation = self.teacher_non_local[i](t_fpn_outs[i])
-                    kd_nonlocal_loss += torch.dist(
-                        self.non_local_adaptation[i](s_relation), t_relation, p=2)
+                # kd_nonlocal_loss = 0
+                # kd_relation_loss = 0
+                # kd_foreground_loss = 0
+                # for i in range(len(extra_fpn_outs)):
+                #     s_relation = self.student_non_local[i](extra_fpn_outs[i])
+                #     t_relation = self.teacher_non_local[i](t_fpn_outs[i])
+                #     kd_nonlocal_loss += torch.dist(
+                #         self.non_local_adaptation[i](s_relation), t_relation, p=2)
                     
-                    mixup = targets.shape[2] > 5
-                    if mixup:
-                        label_cut = targets[..., :5]
-                    else:
-                        label_cut = targets
-                    nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
-                    for batch_idx in range(targets.shape[0]):
-                        num_gt = int(nlabel[batch_idx])
-                        if num_gt == 0:
-                            # print("num_gt == 0")
-                            continue
-                        gt_bboxes_per_image = targets[batch_idx, :num_gt, 1:5]
-                        # convert from xywh to tlbr
-                        gt_bboxes_per_image[:, :2] = gt_bboxes_per_image[:, :2] - \
-                            gt_bboxes_per_image[:, 2:] / 2
-                        gt_bboxes_per_image[:, 2:] = gt_bboxes_per_image[:, :2] + gt_bboxes_per_image[:, 2:]
-                        # Normalize for all value > 0
-                        gt_bboxes_per_image = torch.clamp(gt_bboxes_per_image, min=0)
+                #     mixup = targets.shape[2] > 5
+                #     if mixup:
+                #         label_cut = targets[..., :5]
+                #     else:
+                #         label_cut = targets
+                #     nlabel = (label_cut.sum(dim=2) > 0).sum(dim=1)  # number of objects
+                #     for batch_idx in range(targets.shape[0]):
+                #         num_gt = int(nlabel[batch_idx])
+                #         if num_gt == 0:
+                #             # print("num_gt == 0")
+                #             continue
+                #         gt_bboxes_per_image = targets[batch_idx, :num_gt, 1:5]
+                #         # convert from xywh to tlbr
+                #         gt_bboxes_per_image[:, :2] = gt_bboxes_per_image[:, :2] - \
+                #             gt_bboxes_per_image[:, 2:] / 2
+                #         gt_bboxes_per_image[:, 2:] = gt_bboxes_per_image[:, :2] + gt_bboxes_per_image[:, 2:]
+                #         # Normalize for all value > 0
+                #         gt_bboxes_per_image = torch.clamp(gt_bboxes_per_image, min=0)
 
-                        s_region = roi_align(
-                            extra_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=extra_fpn_outs[i].shape[-1] / 1088)
-                        t_region = roi_align(
-                            t_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=t_fpn_outs[i].shape[-1] / 1088)
-                        s_object_relation = self.student_relation[i](s_region)
-                        t_object_relation = self.teacher_relation[i](t_region)
-                        kd_relation_loss += torch.dist(self.relation_adaptation[i](
-                            s_object_relation), t_object_relation, p=2)
-                        kd_foreground_loss += torch.dist(self.for_adaptation[i](s_region), t_region, p=2)
+                #         s_region = roi_align(
+                #             extra_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=extra_fpn_outs[i].shape[-1] / 1088)
+                #         t_region = roi_align(
+                #             t_fpn_outs[i], boxes=[gt_bboxes_per_image], output_size=3, spatial_scale=t_fpn_outs[i].shape[-1] / 1088)
+                #         s_object_relation = self.student_relation[i](s_region)
+                #         t_object_relation = self.teacher_relation[i](t_region)
+                #         kd_relation_loss += torch.dist(self.relation_adaptation[i](
+                #             s_object_relation), t_object_relation, p=2)
+                #         kd_foreground_loss += torch.dist(self.for_adaptation[i](s_region), t_region, p=2)
 
-                        kd_nonlocal_loss *= 4e-3
-                        kd_relation_loss *= 0.05
-                        kd_foreground_loss *= 0.06
+                #         kd_nonlocal_loss *= 4e-3
+                #         kd_relation_loss *= 0.05
+                #         kd_foreground_loss *= 0.06
 
-                total_drkd_loss += kd_nonlocal_loss + kd_relation_loss + kd_foreground_loss
+                # total_drkd_loss += kd_nonlocal_loss + kd_relation_loss + kd_foreground_loss
 
             outputs = {
                 "total_loss": loss + total_extra_loss + total_drkd_loss,
