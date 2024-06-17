@@ -159,7 +159,7 @@ class YOLOXMutipleHead(nn.Module):
                     flatten_fpn_outs = extra_fpn_outs[i].view(extra_fpn_outs[i].shape[0], -1)
                     flatten_t_fpn_outs = t_fpn_outs[i].view(t_fpn_outs[i].shape[0], -1)
                     cosine_loss = 1 - self.cosine_similarity(flatten_fpn_outs, flatten_t_fpn_outs)
-                    total_drkd_loss = torch.sum(cosine_loss) / cosine_loss.shape[0]
+                    total_drkd_loss += torch.sum(cosine_loss) / cosine_loss.shape[0]
                 extra_fpn_outs = tuple(extra_fpn_outs)
                 extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_heads[extra_index](
                     extra_fpn_outs, targets, x
