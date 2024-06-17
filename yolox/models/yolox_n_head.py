@@ -159,6 +159,7 @@ class YOLOXMutipleHead(nn.Module):
                     flatten_fpn_outs = extra_fpn_outs[i].view(extra_fpn_outs[i].shape[0], -1)
                     flatten_t_fpn_outs = t_fpn_outs[i].view(t_fpn_outs[i].shape[0], -1)
                     cosine_sim = self.cosine_similarity(flatten_fpn_outs, flatten_t_fpn_outs)
+                    print(cosine_sim)
                     print(1 - cosine_sim)
                     exit()
                 extra_fpn_outs = tuple(extra_fpn_outs)
