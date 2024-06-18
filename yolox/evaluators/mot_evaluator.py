@@ -24,7 +24,7 @@ import itertools
 import json
 import tempfile
 import time
-from yolov10.ultralytics import YOLOv10
+# from yolov10.ultralytics import YOLOv10
 # from yolov8.ultralytics import YOLO,YOLOCustom
 
 
