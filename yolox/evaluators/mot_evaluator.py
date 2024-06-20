@@ -25,7 +25,7 @@ import json
 import tempfile
 import time
 # from yolov10.ultralytics import YOLOv10
-# from yolov8.ultralytics import YOLO,YOLOCustom
+from yolov8.ultralytics import YOLO,YOLOCustom
 
 
 def write_results(filename, results):
@@ -1002,7 +1002,7 @@ class MOTEvaluator:
             summary (sr): summary info of evaluation.
         """
         # model_yolov8 = YOLO("yolov8s.pt")
-        model_yolov8 = YOLOCustom("yolov8s-custom.pt")
+        model_yolov8 = YOLO("yolov8s.pt")
         # TODO half to amp_test
         tensor_type = torch.cuda.HalfTensor if half else torch.cuda.FloatTensor
         model = model.eval()

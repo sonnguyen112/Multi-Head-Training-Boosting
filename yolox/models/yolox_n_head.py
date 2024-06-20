@@ -74,10 +74,13 @@ class YOLOXMutipleHead(nn.Module):
                                          for _ in range(num_extra_head)])
 
         self.up_channels = nn.ModuleList([nn.ModuleList(
-            [nn.Conv2d(int(256 * self.head.width), int(256 * e.width), kernel_size=1),
-             nn.Conv2d(int(512 * self.head.width), int(512 * e.width), kernel_size=1),
-             nn.Conv2d(int(1024 * self.head.width), int(1024 * e.width), kernel_size=1)]
-        ) for e in self.extra_heads])
+            [nn.Sequential(*([nn.Conv2d(int(256 * self.head.width), int(256 * e.width), kernel_size=1)] +
+                             [nn.Conv2d(int(256 * e.width), int(256 * e.width), kernel_size=1) for _ in range(i)])),
+             nn.Sequential(*([nn.Conv2d(int(512 * self.head.width), int(512 * e.width), kernel_size=1)] +
+                           [nn.Conv2d(int(512 * e.width), int(512 * e.width), kernel_size=1) for _ in range(i)])),
+             nn.Sequential(*([nn.Conv2d(int(1024 * self.head.width), int(1024 * e.width), kernel_size=1)] +
+                             [nn.Conv2d(int(1024 * e.width), int(1024 * e.width), kernel_size=1) for _ in range(i)]))]
+        ) for i, e in enumerate(self.extra_heads)])
 
         # self.student_non_local = nn.ModuleList(
         #     [
@@ -132,9 +135,9 @@ class YOLOXMutipleHead(nn.Module):
         #     nn.Conv2d(int(1024 * extra_head.width), int(1024 * extra_head.width),
         #               kernel_size=1, stride=1, padding=0),
         # ])
-        self.cosine_similarity = nn.CosineSimilarity(dim=1)
+        # self.cosine_similarity = nn.CosineSimilarity(dim=1)
 
-    def forward(self, x, targets=None, t_model=None):
+    def forward(self, x, targets=None):
         # fpn output content features of [dark3, dark4, dark5]
         fpn_outs = self.backbone(x)
 
@@ -143,23 +146,20 @@ class YOLOXMutipleHead(nn.Module):
             loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg = self.head(
                 fpn_outs, targets, x
             )
-            
-            
-                
 
-            with torch.no_grad():
-                t_fpn_outs = t_model.backbone(x)
+            # with torch.no_grad():
+            #     t_fpn_outs = t_model.backbone(x)
 
             total_extra_loss = 0
-            total_drkd_loss = 0
+            # total_drkd_loss = 0
             for extra_index, extra_head in enumerate(self.extra_heads):
                 extra_fpn_outs = list(fpn_outs)
                 for i in range(len(extra_fpn_outs)):
                     extra_fpn_outs[i] = self.up_channels[extra_index][i](extra_fpn_outs[i])
-                    flatten_fpn_outs = extra_fpn_outs[i].view(extra_fpn_outs[i].shape[0], -1)
-                    flatten_t_fpn_outs = t_fpn_outs[i].view(t_fpn_outs[i].shape[0], -1)
-                    cosine_loss = 1 - self.cosine_similarity(flatten_fpn_outs, flatten_t_fpn_outs)
-                    total_drkd_loss += torch.sum(cosine_loss) / cosine_loss.shape[0]
+                    # flatten_fpn_outs = extra_fpn_outs[i].view(extra_fpn_outs[i].shape[0], -1)
+                    # flatten_t_fpn_outs = t_fpn_outs[i].view(t_fpn_outs[i].shape[0], -1)
+                    # cosine_loss = 1 - self.cosine_similarity(flatten_fpn_outs, flatten_t_fpn_outs)
+                    # total_drkd_loss += torch.sum(cosine_loss) / cosine_loss.shape[0]
                 extra_fpn_outs = tuple(extra_fpn_outs)
                 extra_loss, extra_iou_loss, extra_conf_loss, extra_cls_loss, extra_l1_loss, extra_num_fg = self.extra_heads[extra_index](
                     extra_fpn_outs, targets, x
@@ -175,7 +175,7 @@ class YOLOXMutipleHead(nn.Module):
                 #     t_relation = self.teacher_non_local[i](t_fpn_outs[i])
                 #     kd_nonlocal_loss += torch.dist(
                 #         self.non_local_adaptation[i](s_relation), t_relation, p=2)
-                    
+
                 #     mixup = targets.shape[2] > 5
                 #     if mixup:
                 #         label_cut = targets[..., :5]
@@ -212,10 +212,9 @@ class YOLOXMutipleHead(nn.Module):
                 # total_drkd_loss += kd_nonlocal_loss + kd_relation_loss + kd_foreground_loss
 
             outputs = {
-                "total_loss": loss + total_extra_loss + total_drkd_loss,
+                "total_loss": loss + total_extra_loss,
                 "loss": loss,
                 "extra_loss": total_extra_loss,
-                "drkd_loss": total_drkd_loss,
                 "num_extra_head": len(self.extra_heads),
                 "iou_loss": iou_loss,
                 "l1_loss": l1_loss,
